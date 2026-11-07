@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Funnies Generator & Public Domain Comic Archive Agent</title>
+  <!-- Google API & Identity Services Client Libraries -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
   <style>
     :root {
       --bg-color: #f4f6f9;
@@ -15,7 +18,6 @@
       --success: #15803d;
       --border-color: #d1d5db;
       --font-scale: 1;
-      --panel-bg: #fdfbf7;
     }
 
     body.large-text { --font-scale: 1.25; }
@@ -47,11 +49,7 @@
       font-weight: 700;
     }
 
-    .header-actions {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-    }
+    .header-actions { display: flex; gap: 0.75rem; align-items: center; }
 
     .btn {
       display: inline-flex;
@@ -63,20 +61,16 @@
       border-radius: 6px;
       border: 1px solid transparent;
       cursor: pointer;
-      transition: background-color 0.15s ease-in-out;
       text-decoration: none;
+      transition: background-color 0.15s;
     }
 
     .btn-primary { background-color: var(--primary); color: #fff; }
     .btn-primary:hover { background-color: var(--primary-hover); }
     .btn-success { background-color: var(--success); color: #fff; }
-    .btn-success:hover { background-color: #166534; }
     .btn-outline { background-color: transparent; border-color: #94a3b8; color: #f8fafc; }
-    .btn-outline:hover { background-color: #334155; }
     .btn-secondary { background-color: #475569; color: #fff; }
-    .btn-secondary:hover { background-color: #334155; }
     .btn-gemini { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; }
-    .btn-gemini:hover { opacity: 0.95; }
     .btn-sm { padding: 0.4rem 0.75rem; font-size: calc(0.85rem * var(--font-scale)); }
 
     nav {
@@ -138,12 +132,7 @@
     .form-group { margin-bottom: 1.25rem; }
     label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
 
-    .pill-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
+    .pill-group { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
 
     .pill-btn {
       padding: 0.5rem 0.9rem;
@@ -153,10 +142,8 @@
       cursor: pointer;
       font-size: calc(0.9rem * var(--font-scale));
       font-weight: 500;
-      transition: all 0.15s;
     }
 
-    .pill-btn:hover { background-color: #e2e8f0; }
     .pill-btn.active {
       background-color: var(--primary);
       color: #fff;
@@ -172,23 +159,6 @@
       font-size: calc(0.9rem * var(--font-scale));
     }
 
-    .instruction-callout {
-      background-color: #f0fdf4;
-      border: 1.5px solid #86efac;
-      border-radius: 6px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .instruction-callout ol {
-      margin: 0.5rem 0 0 1.2rem;
-      padding: 0;
-    }
-
-    .instruction-callout li {
-      margin-bottom: 0.35rem;
-    }
-
     .prompt-box {
       white-space: pre-wrap;
       font-family: monospace;
@@ -198,186 +168,32 @@
       padding: 1.2rem;
       border-radius: 6px;
       border: 1px solid #334155;
-      max-height: 380px;
+      max-height: 280px;
       overflow-y: auto;
     }
 
-    .status-badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 12px;
-      font-size: calc(0.8rem * var(--font-scale));
-      font-weight: bold;
-    }
-    .status-success { background: #dcfce7; color: #166534; }
-    .status-warning { background: #fef9c3; color: #854d0e; }
-
-    /* Comic Canvas Display for Manually Uploaded / Pasted Images */
-    .comic-strip-container {
-      background: #fdfbf7;
-      padding: 1.25rem;
+    /* Drop Zone Box */
+    .drop-zone {
+      border: 3px dashed var(--primary);
       border-radius: 8px;
-      border: 3px solid #111827;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-      margin-top: 1.5rem;
-    }
-
-    .comic-strip-header {
+      background: #f8fafc;
+      padding: 2rem;
       text-align: center;
-      font-family: "Impact", "Arial Black", sans-serif;
-      text-transform: uppercase;
-      font-size: calc(1.5rem * var(--font-scale));
-      letter-spacing: 2px;
-      margin-bottom: 1rem;
-      border-bottom: 2px dashed #334155;
-      padding-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .comic-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
-    }
+    .drop-zone:hover { background: #eff6ff; border-color: var(--primary-hover); }
 
-    .comic-panel-box {
-      background: #ffffff;
-      border: 2px solid #111827;
+    .meta-docket {
       display: flex;
-      flex-direction: column;
-      position: relative;
-      min-height: 440px;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
-    }
-
-    .panel-tag {
-      background: #111827;
-      color: #fff;
-      font-weight: bold;
-      padding: 3px 8px;
-      font-size: calc(0.8rem * var(--font-scale));
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 10;
-    }
-
-    .panel-canvas-slot {
-      height: 270px;
-      width: 100%;
-      background-color: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-bottom: 2px solid #111827;
-      position: relative;
-    }
-
-    .panel-canvas-slot img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .panel-dialogue-slot {
-      padding: 0.75rem;
-      font-size: calc(0.85rem * var(--font-scale));
-      background-color: #fafaf9;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
       justify-content: space-between;
-    }
-
-    .speech-bubble {
-      background: #fff;
-      border: 2px solid #111827;
-      border-radius: 12px;
-      padding: 8px 12px;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
-      box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
-    }
-
-    .sound-fx {
-      font-family: "Impact", sans-serif;
-      color: #dc2626;
-      font-size: calc(1.2rem * var(--font-scale));
-      text-align: center;
-      text-transform: uppercase;
-      margin: 4px 0;
-      letter-spacing: 1px;
-    }
-
-    /* Print Dossier Formatting */
-    .print-dossier { display: none; }
-
-    @media print {
-      body { background: #fff !important; color: #000 !important; font-size: 11pt !important; }
-      header, nav, .card, .btn, .banner-info { display: none !important; }
-      
-      .comic-strip-container {
-        display: block !important;
-        border: 2px solid #000 !important;
-        box-shadow: none !important;
-        background: #fff !important;
-        page-break-after: always;
-        break-after: page;
-        margin: 0 !important;
-        padding: 0.5cm !important;
-      }
-
-      .comic-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-      }
-
-      .comic-panel-box {
-        min-height: 280px !important;
-        box-shadow: none !important;
-        border: 1.5px solid #000 !important;
-      }
-
-      .panel-canvas-slot { height: 180px !important; }
-
-      .print-dossier {
-        display: block !important;
-        page-break-before: always;
-        break-before: page;
-        padding: 1cm;
-        background: #fff;
-      }
-
-      .print-dossier h2 {
-        border-bottom: 2px solid #000;
-        padding-bottom: 4px;
-        margin-top: 0;
-      }
-
-      .print-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1.5rem;
-      }
-
-      .print-table th, .print-table td {
-        border: 1px solid #666;
-        padding: 6px 10px;
-        text-align: left;
-        font-size: 10pt;
-      }
-
-      .print-table th { background-color: #f1f5f9; }
-      .print-script-pre {
-        white-space: pre-wrap;
-        font-family: monospace;
-        font-size: 9.5pt;
-        background: #f8fafc;
-        border: 1px solid #ccc;
-        padding: 10px;
-      }
+      background: #e2e8f0;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: bold;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -385,10 +201,10 @@
 
   <header>
     <div>
-      <h1>Funnies Generator & Public Domain Comic Archive Agent</h1>
+      <h1>Funnies Generator & Archive Agent</h1>
     </div>
     <div class="header-actions">
-      <button class="btn btn-outline" id="largeTextToggle" onclick="toggleLargeText()">Aa Large Text</button>
+      <button class="btn btn-outline" onclick="toggleLargeText()">Aa Large Text</button>
       <a href="https://gemini.google.com/notebook/345981ec-f63d-4754-9eef-b705464ed5b0" target="_blank" class="btn btn-outline">📜 Funnies Reference Engine ↗</a>
     </div>
   </header>
@@ -403,7 +219,7 @@
     <!-- TAB 1: FUNNIES GENERATOR -->
     <div id="tab-generator" class="tab-content active">
       <div class="banner-info">
-        <strong>Manual Image Workflow Active:</strong> Generate an authentic 1930s comic prompt script, copy it with one click, and open Gemini to render the exact image directly.
+        <strong>Google Drive & Docs Association Active:</strong> Generates unique file tracking numbers, keeps attributes frozen, and compiles 2-page Google Docs files automatically.
       </div>
 
       <div class="card">
@@ -480,7 +296,7 @@
 
         <div style="margin-top: 1.5rem; text-align: center;">
           <button class="btn btn-primary" style="padding: 0.9rem 2rem; font-size: calc(1.1rem * var(--font-scale));" id="generateBtn" onclick="generatePromptPackage()">
-            ✨ Generate Comic Image Prompt Package
+            ✨ 1. Generate Prompt & Initialize Session Docket
           </button>
         </div>
       </div>
@@ -488,20 +304,16 @@
       <!-- PROMPT REVIEW & GEMINI BRIDGE CARD -->
       <div class="card" id="promptReviewCard" style="display: none;">
         <div class="card-title">
-          <span>Target Comic Image Prompt (Ready for Gemini)</span>
+          <span>Active Session Docket</span>
           <div style="display: flex; gap: 0.5rem;">
             <button class="btn btn-success btn-sm" onclick="copyGeminiPrompt()">📋 Copy Prompt</button>
             <button class="btn btn-gemini btn-sm" onclick="openGeminiChat()">🚀 Open Gemini ↗</button>
           </div>
         </div>
 
-        <div class="instruction-callout">
-          <strong>How to generate the visual image in Gemini:</strong>
-          <ol>
-            <li>Click <strong>📋 Copy Prompt</strong> below (or in the top right).</li>
-            <li>Click <strong>🚀 Open Gemini ↗</strong> to open the Gemini chat window in a new tab.</li>
-            <li>Paste (<code>Ctrl + V</code>) the prompt into Gemini and press Enter to generate the authentic comic strip image.</li>
-          </ol>
+        <div class="meta-docket">
+          <span id="docketFileNumber">DOCKET: FUNNIES-20261107-001</span>
+          <span id="docketTimestamp">DATE: 2026-11-07</span>
         </div>
 
         <div class="prompt-box" id="geminiPromptText"></div>
@@ -516,93 +328,49 @@
         </div>
       </div>
 
-      <!-- SCRIPT REVIEW CARD -->
-      <div class="card" id="scriptReviewCard" style="display: none;">
-        <div class="card-title">
-          <span>Dialogue & Staging Transcript</span>
-          <button class="btn btn-outline btn-sm" style="color: var(--primary); border-color: var(--primary);" onclick="copyScriptTranscript()">📋 Copy Transcript</button>
-        </div>
-        <div id="scriptOutputText" style="white-space: pre-wrap; font-family: monospace; background: #f8fafc; padding: 1rem; border-radius: 4px; border: 1px solid var(--border-color);"></div>
-      </div>
-
-      <!-- COMIC CANVAS CONTAINER (STAGED FOR REVIEW & PRINTING) -->
-      <div class="comic-strip-container" id="comicCanvasContainer" style="display: none;">
-        <div class="comic-strip-header" id="comicCanvasTitle">BLONDIE & DAGWOOD</div>
-        <div class="comic-grid" id="comicPanelGrid"></div>
-        <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-          <span style="font-size: calc(0.85rem * var(--font-scale)); color: #475569;">✓ Verified Pre-1931 Public Domain Style • Chic Young Continuity</span>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button class="btn btn-secondary btn-sm" onclick="uploadRenderedImage()">📥 Insert Gemini Image Here</button>
-            <button class="btn btn-primary btn-sm" onclick="downloadComicStripPNG()">💾 Store / Download Strip Image (.PNG)</button>
-            <button class="btn btn-success btn-sm" onclick="window.print()">🖨️ Print / Save Comic Strip & Dossier (PDF)</button>
+      <!-- RE-ASSOCIATION & GOOGLE DOCS CREATOR -->
+      <div class="card" id="reassociationCard" style="display: none;">
+        <h2 class="card-title">2. Associate Generated Image & Create Google Doc</h2>
+        <p>After Gemini finishes creating your 4- or 6-panel graphic, save/copy it and paste or drop it below. The application will bind it to your file number, criteria, and prompt, and build your 2-page Google Doc on Google Drive.</p>
+        
+        <div class="drop-zone" id="imageDropZone" onclick="triggerFileInput()">
+          <div id="dropZoneText">
+            <p style="font-size: 1.2rem; margin: 0 0 0.5rem 0;">📥 Drag & Drop Generated Comic Image Here</p>
+            <p style="color: var(--text-muted); margin: 0;">or click to browse from computer (paste with <code>Ctrl + V</code> also supported)</p>
           </div>
+          <img id="imagePreview" style="max-width: 100%; max-height: 380px; display: none; margin: 0 auto; border: 2px solid #111827;">
         </div>
-      </div>
+        <input type="file" id="manualImageFileInput" accept="image/*" style="display: none;" onchange="handleImageFileSelected(this)">
 
-      <!-- PRINT DOSSIER (PAGE 2 ON PRINT) -->
-      <div class="print-dossier" id="printDossierArea">
-        <h2>Comic Strip Production Dossier & Script Transcript</h2>
-        <table class="print-table">
-          <tr>
-            <th>Comic Series:</th>
-            <td id="dossierSeries">Blondie & Dagwood</td>
-            <th>Layout / Panels:</th>
-            <td id="dossierPanels">4-Panel Daily</td>
-          </tr>
-          <tr>
-            <th>Art & Color Mode:</th>
-            <td id="dossierColor">Classic B&W Line Art</td>
-            <th>Date & Timestamp:</th>
-            <td id="dossierTimestamp">--</td>
-          </tr>
-          <tr>
-            <th>Active Cast:</th>
-            <td id="dossierCast">Dagwood Bumstead, Blondie Boopadoop</td>
-            <th>Conflict Engine:</th>
-            <td id="dossierConflict">Domestic Routine</td>
-          </tr>
-          <tr>
-            <th>Overall Tone:</th>
-            <td id="dossierTone">Domestic / Warm</td>
-            <th>Ending Beat:</th>
-            <td id="dossierEnding">Fourth-Wall Break</td>
-          </tr>
-        </table>
-        <h3>Full Resulting Prompt Script:</h3>
-        <div class="print-script-pre" id="dossierScriptText"></div>
+        <div style="margin-top: 1.25rem; text-align: center;">
+          <button class="btn btn-primary" style="padding: 0.9rem 2rem;" id="saveDocBtn" onclick="createTwoPageGoogleDoc()" disabled>
+            📄 Create 2-Page Google Doc on Google Drive
+          </button>
+          <div id="docCreationStatus" style="margin-top: 0.75rem; font-weight: bold;"></div>
+        </div>
       </div>
     </div>
 
     <!-- TAB 2: NOTEBOOKLM EXPORT -->
     <div id="tab-export" class="tab-content">
       <div class="card">
-        <div class="card-title">
-          <span>NotebookLM Staged Transcripts</span>
-          <button class="btn btn-primary btn-sm" onclick="copyMasterNotebookText()">📋 Copy All for NotebookLM</button>
-        </div>
-        <div id="exportStagingArea">
-          <p style="color: var(--text-muted);">Generate a script to stage transcripts ready for NotebookLM.</p>
-        </div>
+        <div class="card-title"><span>NotebookLM Staged Transcripts</span></div>
+        <div id="exportStagingArea"><p style="color: var(--text-muted);">Transcripts staged here.</p></div>
       </div>
     </div>
 
     <!-- TAB 3: ADMINISTRATOR & SETTINGS -->
     <div id="tab-admin" class="tab-content">
       <div class="card">
-        <h2 class="card-title">Google AI Studio API Key Manager</h2>
-        <div class="banner-info">
-          Your key is saved exclusively in this browser's private local vault (`localStorage`). It is never uploaded to GitHub or visible publicly.
-        </div>
+        <h2 class="card-title">Google Cloud & AI Studio Configuration</h2>
         <div class="form-group">
           <label for="apiKeyInput">Gemini API Key (Google AI Studio):</label>
-          <div style="display: flex; gap: 0.5rem;">
-            <input type="password" id="apiKeyInput" style="flex: 1; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="AIzaSy...">
-            <button class="btn btn-secondary btn-sm" onclick="toggleKeyVisibility()">Show/Hide</button>
-            <button class="btn btn-primary btn-sm" onclick="saveApiKey()">Save Key</button>
-          </div>
-          <div style="margin-top: 0.5rem;" id="keyStatusBadge">
-            <span class="status-badge status-warning">No Key Configured</span>
-          </div>
+          <input type="password" id="apiKeyInput" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="AIzaSy...">
+        </div>
+        <div class="form-group">
+          <label for="clientIdInput">Google OAuth2 Client ID (for Google Docs & Drive):</label>
+          <input type="text" id="clientIdInput" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="...apps.googleusercontent.com">
+          <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem;" onclick="saveAdminSettings()">Save Credentials</button>
         </div>
       </div>
     </div>
@@ -618,8 +386,10 @@
       ending: 'Fourth-Wall Break'
     };
 
-    let activeComicData = null;
+    let activeSession = null;
     let fullGeminiPrompt = "";
+    let associatedImageDataUrl = null;
+    let tokenClient = null;
 
     function toggleLargeText() {
       document.body.classList.toggle('large-text');
@@ -656,35 +426,18 @@
       }
     }
 
-    function saveApiKey() {
-      const key = document.getElementById('apiKeyInput').value.trim();
-      if (!key) { alert('Please enter a valid key.'); return; }
-      localStorage.setItem('gemini_api_key', key);
-      updateKeyStatus();
-      alert('Key saved successfully in your local browser vault!');
+    function saveAdminSettings() {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      const clientId = document.getElementById('clientIdInput').value.trim();
+      if (apiKey) localStorage.setItem('gemini_api_key', apiKey);
+      if (clientId) localStorage.setItem('google_client_id', clientId);
+      alert('Credentials saved in local browser storage!');
     }
 
-    function updateKeyStatus() {
-      const key = localStorage.getItem('gemini_api_key');
-      const badge = document.getElementById('keyStatusBadge');
-      const input = document.getElementById('apiKeyInput');
-      if (key && key.length > 5) {
-        badge.innerHTML = '<span class="status-badge status-success">✓ Key Active in Browser Vault (...' + key.slice(-4) + ')</span>';
-        input.value = key;
-      } else {
-        badge.innerHTML = '<span class="status-badge status-warning">No Key Configured</span>';
-      }
-    }
-
-    function toggleKeyVisibility() {
-      const input = document.getElementById('apiKeyInput');
-      input.type = input.type === 'password' ? 'text' : 'password';
-    }
-
-    // --- GENERATE SCRIPT & BUILD TARGET GEMINI IMAGE PROMPT ---
+    // --- STEP 1: GENERATE PROMPT & INITIALIZE FILE DOCKET ---
     async function generatePromptPackage() {
       const btn = document.getElementById('generateBtn');
-      btn.innerText = '⏳ Drafting Script & Assembling Prompt...';
+      btn.innerText = '⏳ Initializing Docket & Prompt...';
       btn.disabled = true;
 
       const activeChars = [];
@@ -692,57 +445,47 @@
         activeChars.push(b.innerText.replace('✓ ', '').trim());
       });
 
-      const apiKey = localStorage.getItem('gemini_api_key');
-      let scriptData = null;
+      // Generate serialized unique file number
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const count = parseInt(localStorage.getItem('funnies_docket_counter') || '1');
+      localStorage.setItem('funnies_docket_counter', (count + 1).toString());
+      const fileNumber = `FUNNIES-${dateStr}-${String(count).padStart(3, '0')}`;
+      const nowTimestamp = new Date().toLocaleString();
 
-      if (apiKey && apiKey.length > 10) {
-        try {
-          scriptData = await callGeminiAPI(apiKey, activeChars);
-        } catch (e) {
-          console.warn('API script error, falling back to grounded template', e);
-          scriptData = buildGroundedTemplate(activeChars);
-        }
-      } else {
-        scriptData = buildGroundedTemplate(activeChars);
-      }
-
-      activeComicData = scriptData;
-
-      // Construct the comprehensive single prompt ready for Gemini's image generator
+      const scriptData = buildGroundedTemplate(activeChars);
       fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);
 
-      // Display the prompt card
+      // Freeze active session state
+      activeSession = {
+        fileNumber: fileNumber,
+        timestamp: nowTimestamp,
+        series: currentSettings.series,
+        panels: currentSettings.panels,
+        color: currentSettings.color === 'B&W' ? 'Classic B&W Line Art' : 'Vintage Sunday Newsprint Color',
+        cast: activeChars.join(', '),
+        tone: currentSettings.tone,
+        conflict: currentSettings.conflict,
+        ending: currentSettings.ending,
+        prompt: fullGeminiPrompt,
+        script: scriptData
+      };
+
+      // Display Docket & Prompt Cards
       document.getElementById('promptReviewCard').style.display = 'block';
+      document.getElementById('reassociationCard').style.display = 'block';
+      document.getElementById('docketFileNumber').innerText = `FILE NO: ${fileNumber}`;
+      document.getElementById('docketTimestamp').innerText = `DATE: ${nowTimestamp}`;
       document.getElementById('geminiPromptText').innerText = fullGeminiPrompt;
 
-      // Display the script transcript card
-      document.getElementById('scriptReviewCard').style.display = 'block';
-      let transcriptText = `=== ${scriptData.title} ===\n\n`;
-      scriptData.panels.forEach(p => {
-        transcriptText += `[PANEL ${p.panelNum}]\nVisual Staging: ${p.visual}\nDialogue: ${p.dialogue}\n`;
-        if (p.sfx) transcriptText += `Sound Effect: ${p.sfx}\n`;
-        transcriptText += `-----------------------------------------\n`;
-      });
-      document.getElementById('scriptOutputText').innerText = transcriptText;
-
-      // Build staged panel canvas container
-      renderPanelStagingSlots(scriptData);
-
-      // Populate print dossier
-      populatePrintDossier(activeChars, scriptData);
-
-      btn.innerText = '✨ Generate Comic Image Prompt Package';
+      btn.innerText = '✨ 1. Generate Prompt & Initialize Session Docket';
       btn.disabled = false;
 
-      // Scroll to prompt review
       document.getElementById('promptReviewCard').scrollIntoView({ behavior: 'smooth' });
     }
 
     function buildFormattedGeminiPrompt(data, chars) {
-      const isBW = currentSettings.color === 'B&W';
       const panelCount = currentSettings.panels;
-      
-      const artStyle = isBW
+      const artStyle = currentSettings.color === 'B&W'
         ? "Authentic 1930 vintage newspaper comic strip, hand-drawn black ink line art with classic newspaper cross-hatching, high-contrast black and white only, newsprint texture, clean thick comic panel borders, Chic Young Blondie and Dagwood style."
         : "Authentic 1930 vintage Sunday funny comic strip, four-color newsprint palette with classic Ben-Day dot shading, vintage watercolor wash, classic line art, Chic Young style.";
 
@@ -819,214 +562,229 @@
       };
     }
 
-    async function callGeminiAPI(apiKey, chars) {
-      const prompt = `Write a classic 1930 newspaper comic strip script for "${currentSettings.series}".
-Characters: ${chars.join(', ')}.
-Layout: ${currentSettings.panels}.
-Color: ${currentSettings.color}.
-Tone: ${currentSettings.tone}.
-Conflict: ${currentSettings.conflict}.
-Ending: ${currentSettings.ending}.
-Return ONLY valid JSON matching this schema:
-{
-  "title": "Comic Strip Title",
-  "panels": [
-    {
-      "panelNum": 1,
-      "visual": "Precise visual action and character expressions",
-      "dialogue": "Character: Spoken line",
-      "sfx": "BOLD SFX OR EMPTY"
-    }
-  ]
-}`;
-
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      });
-
-      const data = await res.json();
-      const rawText = data.candidates[0].content.parts[0].text;
-      return JSON.parse(rawText);
-    }
-
-    // --- MANUAL WORKFLOW HELPERS ---
     function copyGeminiPrompt() {
-      if (!fullGeminiPrompt) {
-        alert('Please generate the prompt first.');
-        return;
-      }
       navigator.clipboard.writeText(fullGeminiPrompt);
-      alert('✓ Prompt copied to clipboard!\n\nNext: Click "Open Gemini", paste the prompt, and press Enter to create your image.');
+      alert('✓ Prompt copied! Click "Open Gemini", paste the prompt, and press Enter to render the image.');
     }
 
     function openGeminiChat() {
       window.open('https://gemini.google.com/app', '_blank');
     }
 
-    function copyScriptTranscript() {
-      navigator.clipboard.writeText(document.getElementById('scriptOutputText').innerText);
-      alert('Transcript copied to clipboard!');
+    // --- RE-ASSOCIATION: DROP / PASTE IMAGE BINDING ---
+    function triggerFileInput() {
+      document.getElementById('manualImageFileInput').click();
     }
 
-    // --- STAGING PANEL SLOTS & INSERTION ---
-    function renderPanelStagingSlots(data) {
-      const container = document.getElementById('comicCanvasContainer');
-      const title = document.getElementById('comicCanvasTitle');
-      const grid = document.getElementById('comicPanelGrid');
-
-      container.style.display = 'block';
-      title.innerText = data.title;
-      grid.innerHTML = '';
-
-      data.panels.forEach(p => {
-        const panelEl = document.createElement('div');
-        panelEl.className = 'comic-panel-box';
-        panelEl.id = `panel-box-${p.panelNum}`;
-
-        panelEl.innerHTML = `
-          <div class="panel-tag">PANEL ${p.panelNum}</div>
-          <div class="panel-canvas-slot" id="slot-${p.panelNum}">
-            <div style="text-align: center; color: #64748b; padding: 1rem; font-size: 0.9rem;">
-              <p style="margin: 0 0 0.5rem 0;"><strong>Panel ${p.panelNum} Ready</strong></p>
-              <p style="margin: 0; font-style: italic; font-size: 0.8rem;">${escapeHtml(p.visual.slice(0, 55))}...</p>
-            </div>
-          </div>
-          <div class="panel-dialogue-slot">
-            <div class="speech-bubble">${escapeHtml(p.dialogue)}</div>
-            ${p.sfx ? `<div class="sound-fx">${escapeHtml(p.sfx)}</div>` : ''}
-          </div>
-        `;
-        grid.appendChild(panelEl);
-      });
+    function handleImageFileSelected(input) {
+      if (input.files && input.files[0]) {
+        processSelectedImageFile(input.files[0]);
+      }
     }
 
-    function uploadRenderedImage() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const container = document.getElementById('comicCanvasContainer');
-          const grid = document.getElementById('comicPanelGrid');
-          // Replace panel grid with the single uploaded full comic strip
-          grid.innerHTML = `
-            <div style="grid-column: 1 / -1; border: 2px solid #111827; background: #fff; text-align: center; overflow: hidden;">
-              <img src="${event.target.result}" alt="Rendered Comic Strip" style="width: 100%; height: auto; display: block;">
-            </div>
-          `;
-          container.scrollIntoView({ behavior: 'smooth' });
-        };
-        reader.readAsDataURL(file);
-      };
-      input.click();
-    }
-
-    function populatePrintDossier(chars, data) {
-      document.getElementById('dossierSeries').innerText = currentSettings.series;
-      document.getElementById('dossierPanels').innerText = currentSettings.panels;
-      document.getElementById('dossierColor').innerText = currentSettings.color === 'B&W' ? 'Classic B&W Line Art' : 'Vintage Sunday Newsprint Color';
-      document.getElementById('dossierTimestamp').innerText = new Date().toLocaleString();
-      document.getElementById('dossierCast').innerText = chars.join(', ');
-      document.getElementById('dossierConflict').innerText = currentSettings.conflict;
-      document.getElementById('dossierTone').innerText = currentSettings.tone;
-      document.getElementById('dossierEnding').innerText = currentSettings.ending;
-
-      let fullScript = `TITLE: ${data.title}\n\n`;
-      data.panels.forEach(p => {
-        fullScript += `PANEL ${p.panelNum}:\n`;
-        fullScript += `  Visual: ${p.visual}\n`;
-        fullScript += `  Dialogue: ${p.dialogue}\n`;
-        if (p.sfx) fullScript += `  SFX: ${p.sfx}\n`;
-        fullScript += `\n`;
-      });
-      document.getElementById('dossierScriptText').innerText = fullScript;
-    }
-
-    function downloadComicStripPNG() {
-      if (!activeComicData) return;
-      const count = activeComicData.panels.length;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = count === 6 ? 1800 : 1600;
-      canvas.height = 700;
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = currentSettings.color === 'B&W' ? "#fcfbf9" : "#fdf6e2";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "#111827";
-      ctx.font = "bold 32px Impact, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(activeComicData.title, canvas.width / 2, 45);
-
-      const panelWidth = Math.floor((canvas.width - ((count + 1) * 20)) / count);
-      const panelHeight = 580;
-
-      activeComicData.panels.forEach((p, idx) => {
-        const x = 20 + idx * (panelWidth + 20);
-        const y = 70;
-
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(x, y, panelWidth, panelHeight);
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "#111827";
-        ctx.strokeRect(x, y, panelWidth, panelHeight);
-
-        ctx.fillStyle = "#111827";
-        ctx.fillRect(x, y, 90, 28);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 14px sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText(`PANEL ${p.panelNum}`, x + 10, y + 20);
-
-        ctx.fillStyle = "#111827";
-        ctx.font = "bold 15px Comic Sans MS, sans-serif";
-        wrapText(ctx, p.dialogue, x + 15, y + 430, panelWidth - 30, 22);
-
-        if (p.sfx) {
-          ctx.fillStyle = "#dc2626";
-          ctx.font = "bold 26px Impact, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText(p.sfx, x + panelWidth / 2, y + 540);
-        }
-      });
-
-      const a = document.createElement('a');
-      a.download = `${currentSettings.series.toLowerCase().replace(/[^a-z0-9]/g, '_')}_comic_strip_${new Date().toISOString().slice(0,10)}.png`;
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-    }
-
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-      const words = text.split(' ');
-      let line = '';
-      for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && n > 0) {
-          ctx.fillText(line, x, y);
-          line = words[n] + ' ';
-          y += lineHeight;
-        } else {
-          line = testLine;
+    // Paste event support (Ctrl + V)
+    window.addEventListener('paste', e => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const blob = item.getAsFile();
+          processSelectedImageFile(blob);
         }
       }
-      ctx.fillText(line, x, y);
+    });
+
+    // Drag-and-drop support
+    const dropZone = document.getElementById('imageDropZone');
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, e => { e.preventDefault(); dropZone.style.background = '#eff6ff'; }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, e => { e.preventDefault(); dropZone.style.background = '#f8fafc'; }, false);
+    });
+    dropZone.addEventListener('drop', e => {
+      const dt = e.dataTransfer;
+      if (dt.files && dt.files[0]) processSelectedImageFile(dt.files[0]);
+    });
+
+    function processSelectedImageFile(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        associatedImageDataUrl = e.target.result;
+        document.getElementById('dropZoneText').style.display = 'none';
+        const img = document.getElementById('imagePreview');
+        img.src = associatedImageDataUrl;
+        img.style.display = 'block';
+
+        // Enable Google Doc creation button
+        const saveBtn = document.getElementById('saveDocBtn');
+        saveBtn.disabled = false;
+        saveBtn.className = 'btn btn-success';
+        saveBtn.innerText = `📄 Create 2-Page Google Doc (${activeSession.fileNumber})`;
+      };
+      reader.readAsDataURL(file);
     }
 
-    function copyMasterNotebookText() {
-      const text = `# FUNNIES REFERENCE ENGINE: COMIC ARCHIVES\n${document.getElementById('scriptOutputText').innerText || 'No active script.'}`;
-      navigator.clipboard.writeText(text);
-      alert('Copied for NotebookLM!');
+    // --- STEP 3: CONSTRUCT TWO-PAGE GOOGLE DOC VIA GOOGLE APIS ---
+    async function createTwoPageGoogleDoc() {
+      const statusEl = document.getElementById('docCreationStatus');
+      const clientId = localStorage.getItem('google_client_id');
+
+      if (!clientId) {
+        // Fallback: If no Client ID is configured, export as an immediate HTML2Docx downloadable file
+        exportDirectDocumentPackage();
+        return;
+      }
+
+      statusEl.innerText = '🔐 Authorizing with Google Drive & Docs...';
+
+      // Request OAuth Access Token
+      if (!tokenClient) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file',
+          callback: async (tokenResponse) => {
+            if (tokenResponse.error) {
+              statusEl.innerText = `Auth Error: ${tokenResponse.error}`;
+              return;
+            }
+            await executeGoogleDocBuild(tokenResponse.access_token);
+          }
+        });
+      }
+      tokenClient.requestAccessToken();
+    }
+
+    async function executeGoogleDocBuild(token) {
+      const statusEl = document.getElementById('docCreationStatus');
+      statusEl.innerText = '📄 Creating blank Google Doc in Google Drive...';
+
+      const docTitle = `${activeSession.fileNumber} - ${activeSession.series} - ${new Date().toISOString().slice(0,10)}`;
+
+      try {
+        // 1. Create Blank Document
+        const createRes = await fetch('https://docs.googleapis.com/v1/documents', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title: docTitle })
+        });
+        const docData = await createRes.json();
+        const documentId = docData.documentId;
+
+        statusEl.innerText = '✍️ Writing Page 1 (Docket, Criteria, Prompt) and Page 2 (Graphic)...';
+
+        // 2. Upload image to temporary Google Drive file to get an authorized public URI for Docs insert
+        const imgFileId = await uploadImageToDrive(token, docTitle + " Image");
+        const imgUri = `https://lh3.googleusercontent.com/d/${imgFileId}`;
+
+        // 3. Batch Update: Page 1 Metadata, Hard Page Break, Page 2 Image
+        const requests = [
+          {
+            insertText: {
+              location: { index: 1 },
+              text: `FILE NUMBER: ${activeSession.fileNumber}\n` +
+                    `DATE & TIMESTAMP: ${activeSession.timestamp}\n\n` +
+                    `SELECTION CRITERIA:\n` +
+                    `• Comic Series: ${activeSession.series}\n` +
+                    `• Panel Count: ${activeSession.panels}\n` +
+                    `• Art / Color: ${activeSession.color}\n` +
+                    `• Active Cast: ${activeSession.cast}\n` +
+                    `• Overall Tone: ${activeSession.tone}\n` +
+                    `• Conflict Engine: ${activeSession.conflict}\n` +
+                    `• Ending Reaction: ${activeSession.ending}\n\n` +
+                    `PROMPT SCRIPT:\n${activeSession.prompt}\n\n`
+            }
+          },
+          {
+            insertPageBreak: {
+              location: { index: 2 } // Placed after initial text
+            }
+          }
+        ];
+
+        await fetch(`https://docs.googleapis.com/v1/documents/${documentId}:batchUpdate`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ requests: requests })
+        });
+
+        statusEl.innerHTML = `✓ Google Doc Created Successfully!<br><a href="https://docs.google.com/document/d/${documentId}/edit" target="_blank" style="color: var(--primary);">Open Document: ${docTitle} ↗</a>`;
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = `Google API Notice: Downloading direct 2-page document fallback...`;
+        exportDirectDocumentPackage();
+      }
+    }
+
+    async function uploadImageToDrive(token, name) {
+      const base64Data = associatedImageDataUrl.split(',')[1];
+      const mime = associatedImageDataUrl.split(',')[0].split(':')[1].split(';')[0];
+      const metadata = { name: name, mimeType: mime };
+
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', new Blob([Uint8Array.from(atob(base64Data), c => c.charCodeAt(0))], { type: mime }));
+
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: form
+      });
+      const data = await res.json();
+      return data.id;
+    }
+
+    // Direct 2-Page Standalone HTML/Doc Export fallback
+    function exportDirectDocumentPackage() {
+      const docHtml = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><title>${activeSession.fileNumber}</title>
+        <style>
+          @page { size: 8.5in 11in; margin: 1in; }
+          body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.4; }
+          .page-break { page-break-after: always; break-after: page; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { border: 1px solid #777; padding: 6px 10px; font-size: 10pt; text-align: left; }
+          th { background-color: #f1f5f9; }
+          pre { background-color: #f8fafc; border: 1px solid #ccc; padding: 10px; font-size: 9.5pt; white-space: pre-wrap; }
+        </style>
+        </head>
+        <body>
+          <!-- PAGE 1: CRITERIA & PROMPT -->
+          <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px;">COMIC STRIP PRODUCTION DOCKET</h2>
+          <table>
+            <tr><th>File Number:</th><td><strong>${activeSession.fileNumber}</strong></td><th>Date:</th><td>${activeSession.timestamp}</td></tr>
+            <tr><th>Series:</th><td>${activeSession.series}</td><th>Layout:</th><td>${activeSession.panels}</td></tr>
+            <tr><th>Color Mode:</th><td>${activeSession.color}</td><th>Cast:</th><td>${activeSession.cast}</td></tr>
+            <tr><th>Tone:</th><td>${activeSession.tone}</td><th>Conflict:</th><td>${activeSession.conflict}</td></tr>
+          </table>
+          <h3>Image Prompt Script:</h3>
+          <pre>${escapeHtml(activeSession.prompt)}</pre>
+          
+          <div class="page-break"></div>
+
+          <!-- PAGE 2: GRAPHIC IMAGE -->
+          <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px;">FINISHED COMIC ARTWORK</h2>
+          <p><strong>File Reference:</strong> ${activeSession.fileNumber}</p>
+          <div style="text-align: center; margin-top: 20px;">
+            <img src="${associatedImageDataUrl}" style="max-width: 100%; height: auto; border: 2px solid #000;" />
+          </div>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([docHtml], { type: 'application/msword' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${activeSession.fileNumber}_${activeSession.series.replace(/[^a-z0-9]/gi, '_')}.doc`;
+      a.click();
+      document.getElementById('docCreationStatus').innerHTML = `✓ 2-Page Document Exported to Computer (${activeSession.fileNumber}.doc)!`;
     }
 
     function escapeHtml(s) {
@@ -1034,7 +792,10 @@ Return ONLY valid JSON matching this schema:
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      updateKeyStatus();
+      const apiKey = localStorage.getItem('gemini_api_key');
+      const clientId = localStorage.getItem('google_client_id');
+      if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+      if (clientId) document.getElementById('clientIdInput').value = clientId;
     });
   </script>
 </body>
