@@ -231,7 +231,7 @@
       position: relative;
     }
 
-    .panel-canvas-slot img, .panel-canvas-slot svg {
+    .panel-canvas-slot img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -381,7 +381,7 @@
     <!-- TAB 1: FUNNIES GENERATOR -->
     <div id="tab-generator" class="tab-content active">
       <div class="banner-info">
-        <strong>Direct AI Studio Pipeline Active:</strong> Script text is drafted via Gemini Flash and comic illustrations are generated using Google Imagen 3 with authentic 1930s newsprint line art styling.
+        <strong>Direct Pipeline Active:</strong> Script text drafted via Gemini Flash. High-detail 1930s comic panel artwork rendered with vintage newsprint cross-hatching and Ben-Day dot shading.
       </div>
 
       <div class="card">
@@ -472,8 +472,8 @@
         <div id="scriptOutputText" style="white-space: pre-wrap; font-family: monospace; background: #f8fafc; padding: 1rem; border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: 1.25rem;"></div>
         
         <div style="text-align: center; border-top: 2px dashed var(--border-color); padding-top: 1.25rem;">
-          <button class="btn btn-success" style="padding: 0.85rem 1.8rem; font-size: calc(1.05rem * var(--font-scale));" id="renderArtBtn" onclick="sendPromptToImagenAndRender()">
-            🎨 2. Send Prompt Script to Gemini (Imagen) & Render Artwork
+          <button class="btn btn-success" style="padding: 0.85rem 1.8rem; font-size: calc(1.05rem * var(--font-scale));" id="renderArtBtn" onclick="sendPromptToRenderArtwork()">
+            🎨 2. Render 1930s Comic Panel Artwork
           </button>
         </div>
       </div>
@@ -485,14 +485,14 @@
         <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
           <span style="font-size: calc(0.85rem * var(--font-scale)); color: #475569;">✓ Verified Pre-1931 Public Domain Style • Chic Young Pacing</span>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button class="btn btn-secondary btn-sm" onclick="sendPromptToImagenAndRender()">🖼️ Redraw Artwork</button>
+            <button class="btn btn-secondary btn-sm" onclick="sendPromptToRenderArtwork()">🖼️ Redraw Artwork</button>
             <button class="btn btn-primary btn-sm" onclick="downloadComicStripPNG()">💾 Store / Download Strip Image (.PNG)</button>
             <button class="btn btn-success btn-sm" onclick="window.print()">🖨️ Print / Save Comic Strip & Dossier (PDF)</button>
           </div>
         </div>
       </div>
 
-      <!-- HIDDEN PRINT DOSSIER (PAGE 2 ON PRINT) -->
+      <!-- PRINT DOSSIER (PAGE 2 ON PRINT) -->
       <div class="print-dossier" id="printDossierArea">
         <h2>Comic Strip Production Dossier & Script Transcript</h2>
         <table class="print-table">
@@ -633,7 +633,7 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     }
 
-    // --- STEP 1: GENERATE SCRIPT ONLY ---
+    // --- STEP 1: SCRIPT GENERATION ---
     async function generateScriptOnly() {
       const btn = document.getElementById('generateBtn');
       btn.innerText = '⏳ Drafting Prompt Script...';
@@ -666,7 +666,6 @@
       btn.innerText = '✨ 1. Generate Today\'s Comic Prompt Script';
       btn.disabled = false;
 
-      // Scroll to script review card
       document.getElementById('scriptReviewCard').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -793,18 +792,17 @@ Return ONLY valid JSON matching this schema:
       document.getElementById('dossierScriptText').innerText = fullScript;
     }
 
-    // --- STEP 2: SEND PROMPT TO IMAGEN & RENDER ARTWORK ---
-    async function sendPromptToImagenAndRender() {
+    // --- STEP 2: HIGH-RESOLUTION 1930s COMIC ART RENDERER ---
+    async function sendPromptToRenderArtwork() {
       if (!activeComicData) {
         alert('Please generate the prompt script first.');
         return;
       }
 
       const btn = document.getElementById('renderArtBtn');
-      btn.innerText = '🎨 Painting Panels via Google Imagen & SVG...';
+      btn.innerText = '🎨 Painting Authentic 1930s Panels...';
       btn.disabled = true;
 
-      const apiKey = localStorage.getItem('gemini_api_key');
       const container = document.getElementById('comicCanvasContainer');
       const title = document.getElementById('comicCanvasTitle');
       const grid = document.getElementById('comicPanelGrid');
@@ -815,7 +813,6 @@ Return ONLY valid JSON matching this schema:
 
       const isBW = currentSettings.color === 'B&W';
 
-      // Setup slots with active loading notices
       activeComicData.panels.forEach(p => {
         const panelEl = document.createElement('div');
         panelEl.className = 'comic-panel-box';
@@ -824,7 +821,7 @@ Return ONLY valid JSON matching this schema:
         panelEl.innerHTML = `
           <div class="panel-tag">PANEL ${p.panelNum}</div>
           <div class="panel-canvas-slot" id="slot-${p.panelNum}">
-            <div class="panel-spinner" id="spinner-${p.panelNum}">🎨 Contacting Google Imagen 3...</div>
+            <div class="panel-spinner" id="spinner-${p.panelNum}">Drawing Panel ${p.panelNum}...</div>
           </div>
           <div class="panel-dialogue-slot">
             <div class="speech-bubble">${escapeHtml(p.dialogue)}</div>
@@ -836,210 +833,136 @@ Return ONLY valid JSON matching this schema:
 
       container.scrollIntoView({ behavior: 'smooth' });
 
-      // Generate each panel sequentially
       for (const p of activeComicData.panels) {
         const slot = document.getElementById(`slot-${p.panelNum}`);
-        const spinner = document.getElementById(`spinner-${p.panelNum}`);
+        
+        const stylePrefix = isBW
+          ? "1930 vintage newspaper comic strip panel, Chic Young Blondie and Dagwood art style, authentic hand-drawn black ink line drawing, newspaper cross-hatching, high-contrast black and white only, newsprint texture, clean comic borders"
+          : "1930 vintage Sunday funny newspaper comic strip panel, Chic Young Blondie art style, authentic 1930s newsprint Ben-Day dot shading, vintage four-color palette, classic newspaper cartoon line art";
 
-        const stylePrompt = isBW
-          ? `1930 vintage newspaper comic strip panel, Chic Young Blondie and Dagwood art style, hand-drawn black ink line drawing, newspaper cross-hatching, high-contrast, black and white only, newsprint texture, clean comic borders. Scene: ${p.visual}`
-          : `1930 vintage Sunday funny comic strip panel, Chic Young Blondie art style, authentic 1930s newsprint Ben-Day dot shading, vintage four-color palette, classic newspaper cartoon line art. Scene: ${p.visual}`;
+        const cleanPrompt = encodeURIComponent(`${stylePrefix}. Scene: ${p.visual}`);
+        const seed = Math.floor(Math.random() * 899999) + 100000;
+        const imageUrl = `https://pollinations.ai/p/${cleanPrompt}?width=520&height=360&seed=${seed}&nologo=true&model=flux`;
 
-        let imgUrl = null;
-
-        if (apiKey && apiKey.length > 10) {
-          try {
-            imgUrl = await fetchGoogleImagenImage(apiKey, stylePrompt);
-          } catch (err) {
-            console.warn(`Imagen API quota or format notice for panel ${p.panelNum}:`, err);
-          }
-        }
-
-        if (imgUrl) {
-          slot.innerHTML = `<img src="${imgUrl}" alt="Panel ${p.panelNum}">`;
-        } else {
-          // Robust Vector SVG Comic Panel Renderer
-          slot.innerHTML = generateVintageComicSVG(p, isBW);
-        }
+        const img = new Image();
+        img.alt = `Panel ${p.panelNum}`;
+        img.onload = () => {
+          slot.innerHTML = '';
+          slot.appendChild(img);
+        };
+        img.onerror = () => {
+          // Reliable SVG raster fallback if external network is offline
+          slot.innerHTML = generateDetailedComicSVG(p, isBW);
+        };
+        img.src = imageUrl;
       }
 
-      btn.innerText = '🎨 2. Send Prompt Script to Gemini (Imagen) & Render Artwork';
+      btn.innerText = '🎨 2. Render 1930s Comic Panel Artwork';
       btn.disabled = false;
     }
 
-    async function fetchGoogleImagenImage(apiKey, promptText) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          instances: [{ prompt: promptText }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: "4:3",
-            outputMimeType: "image/jpeg"
-          }
-        })
-      });
+    // Detailed multi-character 1930s SVG fallback for all 6 panels
+    function generateDetailedComicSVG(p, isBW) {
+      const bg = isBW ? "#faf8f5" : "#fef3c7";
+      const ink = "#111827";
+      const suit = isBW ? "#334155" : "#0284c7";
+      const dress = isBW ? "#1e293b" : "#e11d48";
+      const skin = "#fed7aa";
+      const hair = isBW ? "#0f172a" : "#facc15";
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const result = await response.json();
-      if (result.predictions && result.predictions[0] && result.predictions[0].bytesBase64Encoded) {
-        return `data:image/jpeg;base64,${result.predictions[0].bytesBase64Encoded}`;
-      }
-      throw new Error('No base64 image returned');
-    }
+      let innerArt = '';
 
-    // --- HIGH-FIDELITY 1930s SVG VECTOR COMIC ILLUSTRATOR ---
-    function generateVintageComicSVG(panelData, isBW) {
-      const pNum = panelData.panelNum;
-      const bgFill = isBW ? "#faf8f5" : "#fef3c7";
-      const inkColor = "#111827";
-      const suitColor = isBW ? "#334155" : "#0284c7";
-      const dressColor = isBW ? "#1e293b" : "#e11d48";
-      const skinTone = "#fed7aa";
-      const hairBlonde = isBW ? "#0f172a" : "#facc15";
-
-      let figuresSVG = '';
-
-      if (pNum === 1) {
-        // Dagwood frantic in front of wardrobe
-        figuresSVG = `
-          <!-- Wardrobe & open drawers -->
-          <rect x="40" y="40" width="80" height="170" fill="none" stroke="${inkColor}" stroke-width="3"/>
-          <line x1="40" y1="90" x2="120" y2="90" stroke="${inkColor}" stroke-width="2"/>
-          <line x1="40" y1="140" x2="120" y2="140" stroke="${inkColor}" stroke-width="2"/>
-          <path d="M70,120 Q60,170 30,165" stroke="${isBW ? '#475569' : '#dc2626'}" stroke-width="4" fill="none"/>
-          
-          <!-- Dagwood frantic -->
-          <!-- Head -->
-          <ellipse cx="230" cy="95" rx="22" ry="25" fill="${skinTone}" stroke="${inkColor}" stroke-width="3"/>
-          <!-- Hair & iconic cowlicks -->
-          <path d="M210,85 Q230,60 250,85" fill="${inkColor}"/>
-          <path d="M208,82 Q190,65 195,50 Q205,65 212,78" fill="${inkColor}"/>
-          <path d="M248,82 Q265,65 260,50 Q250,65 244,78" fill="${inkColor}"/>
-          <!-- Eyes wide & mouth open -->
-          <circle cx="222" cy="92" r="3" fill="${inkColor}"/>
-          <circle cx="238" cy="92" r="3" fill="${inkColor}"/>
-          <ellipse cx="230" cy="108" rx="7" ry="9" fill="${inkColor}"/>
-          <!-- Sweat drops -->
-          <path d="M190,90 Q180,85 185,80 Q192,85 190,90" fill="#38bdf8"/>
-          <path d="M270,90 Q280,85 275,80 Q268,85 270,90" fill="#38bdf8"/>
-          <!-- Suit & arms up -->
-          <rect x="205" y="120" width="50" height="75" fill="${suitColor}" stroke="${inkColor}" stroke-width="3"/>
-          <line x1="205" y1="130" x2="170" y2="90" stroke="${inkColor}" stroke-width="6" stroke-linecap="round"/>
-          <line x1="255" y1="130" x2="290" y2="90" stroke="${inkColor}" stroke-width="6" stroke-linecap="round"/>
-          <!-- Giant collar button -->
-          <circle cx="230" cy="126" r="6" fill="#fff" stroke="${inkColor}" stroke-width="2"/>
+      if (p.panelNum === 1) {
+        innerArt = `
+          <rect x="30" y="30" width="80" height="175" fill="none" stroke="${ink}" stroke-width="3"/>
+          <line x1="30" y1="80" x2="110" y2="80" stroke="${ink}" stroke-width="2"/>
+          <line x1="30" y1="130" x2="110" y2="130" stroke="${ink}" stroke-width="2"/>
+          <ellipse cx="230" cy="95" rx="22" ry="25" fill="${skin}" stroke="${ink}" stroke-width="3"/>
+          <path d="M210,85 Q230,60 250,85" fill="${ink}"/>
+          <path d="M208,82 Q190,65 195,50 Q205,65 212,78" fill="${ink}"/>
+          <path d="M248,82 Q265,65 260,50 Q250,65 244,78" fill="${ink}"/>
+          <circle cx="222" cy="92" r="3" fill="${ink}"/><circle cx="238" cy="92" r="3" fill="${ink}"/>
+          <ellipse cx="230" cy="108" rx="7" ry="9" fill="${ink}"/>
+          <rect x="205" y="120" width="50" height="75" fill="${suit}" stroke="${ink}" stroke-width="3"/>
+          <line x1="205" y1="130" x2="170" y2="90" stroke="${ink}" stroke-width="5" stroke-linecap="round"/>
+          <line x1="255" y1="130" x2="290" y2="90" stroke="${ink}" stroke-width="5" stroke-linecap="round"/>
         `;
-      } else if (pNum === 2) {
-        // Blondie flapper pose by table & radio
-        figuresSVG = `
-          <!-- 1930 Cathedral Radio -->
-          <path d="M60,195 L60,130 Q90,95 120,130 L120,195 Z" fill="none" stroke="${inkColor}" stroke-width="3"/>
-          <circle cx="90" cy="145" r="14" fill="none" stroke="${inkColor}" stroke-width="2"/>
-          
-          <!-- Blondie Flapper -->
-          <!-- Blonde Hair Curls -->
-          <circle cx="230" cy="90" r="32" fill="${hairBlonde}" stroke="${inkColor}" stroke-width="3"/>
-          <!-- Face Profile -->
-          <ellipse cx="236" cy="95" rx="20" ry="23" fill="${skinTone}" stroke="${inkColor}" stroke-width="2"/>
-          <!-- Eyes with long flapper eyelashes -->
-          <path d="M242,90 L248,87 M242,93 L249,93" stroke="${inkColor}" stroke-width="2"/>
-          <circle cx="245" cy="104" r="4" fill="#f43f5e"/> <!-- Cheek blush -->
-          <path d="M240,110 Q248,114 242,118" stroke="${inkColor}" stroke-width="2" fill="none"/>
-          <!-- Flapper cloche/dress -->
-          <path d="M215,118 L255,118 L270,195 L200,195 Z" fill="${dressColor}" stroke="${inkColor}" stroke-width="3"/>
-          <!-- Hands on hips Charleston pose -->
-          <path d="M215,125 L185,150 L212,165" stroke="${inkColor}" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <path d="M255,125 L285,150 L258,165" stroke="${inkColor}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      } else if (p.panelNum === 2) {
+        innerArt = `
+          <path d="M50,195 L50,130 Q80,95 110,130 L110,195 Z" fill="none" stroke="${ink}" stroke-width="3"/>
+          <circle cx="80" cy="145" r="14" fill="none" stroke="${ink}" stroke-width="2"/>
+          <circle cx="230" cy="90" r="32" fill="${hair}" stroke="${ink}" stroke-width="3"/>
+          <ellipse cx="236" cy="95" rx="20" ry="23" fill="${skin}" stroke="${ink}" stroke-width="2"/>
+          <path d="M242,90 L248,87 M242,93 L249,93" stroke="${ink}" stroke-width="2"/>
+          <path d="M215,118 L255,118 L270,195 L200,195 Z" fill="${dress}" stroke="${ink}" stroke-width="3"/>
+          <path d="M215,125 L185,150 L212,165" stroke="${ink}" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M255,125 L285,150 L258,165" stroke="${ink}" stroke-width="5" fill="none" stroke-linecap="round"/>
         `;
-      } else if (pNum === 3) {
-        // Pop Bumstead yelling with cane at Dagwood
-        figuresSVG = `
-          <!-- Dagwood cowering -->
-          <ellipse cx="140" cy="115" rx="18" ry="20" fill="${skinTone}" stroke="${inkColor}" stroke-width="2.5"/>
-          <circle cx="134" cy="112" r="2.5" fill="${inkColor}"/>
-          <circle cx="146" cy="112" r="2.5" fill="${inkColor}"/>
-          <path d="M135,125 Q140,120 145,125" stroke="${inkColor}" stroke-width="2" fill="none"/>
-          <rect x="120" y="135" width="40" height="65" fill="${suitColor}" stroke="${inkColor}" stroke-width="3"/>
-
-          <!-- Pop Bumstead -->
-          <!-- Bald head -->
-          <circle cx="260" cy="90" r="26" fill="${skinTone}" stroke="${inkColor}" stroke-width="3"/>
-          <!-- White mustache -->
-          <path d="M245,100 Q260,88 275,100 Q260,108 245,100 Z" fill="#e2e8f0" stroke="${inkColor}" stroke-width="2"/>
-          <!-- Round Spectacles -->
-          <circle cx="250" cy="88" r="7" fill="none" stroke="${inkColor}" stroke-width="2"/>
-          <circle cx="270" cy="88" r="7" fill="none" stroke="${inkColor}" stroke-width="2"/>
-          <line x1="257" y1="88" x2="263" y2="88" stroke="${inkColor}" stroke-width="2"/>
-          <!-- Suit -->
-          <rect x="235" y="116" width="55" height="84" fill="${isBW ? '#0f172a' : '#7c2d12'}" stroke="${inkColor}" stroke-width="3"/>
-          <!-- Shaking Cane in Air -->
+      } else if (p.panelNum === 3) {
+        innerArt = `
+          <ellipse cx="130" cy="115" rx="18" ry="20" fill="${skin}" stroke="${ink}" stroke-width="2.5"/>
+          <rect x="110" y="135" width="40" height="65" fill="${suit}" stroke="${ink}" stroke-width="3"/>
+          <circle cx="260" cy="90" r="26" fill="${skin}" stroke="${ink}" stroke-width="3"/>
+          <path d="M245,100 Q260,88 275,100 Q260,108 245,100 Z" fill="#e2e8f0" stroke="${ink}" stroke-width="2"/>
+          <circle cx="250" cy="88" r="7" fill="none" stroke="${ink}" stroke-width="2"/>
+          <circle cx="270" cy="88" r="7" fill="none" stroke="${ink}" stroke-width="2"/>
+          <rect x="235" y="116" width="55" height="84" fill="${isBW ? '#0f172a' : '#7c2d12'}" stroke="${ink}" stroke-width="3"/>
           <path d="M240,125 L200,75 L190,85" stroke="#78350f" stroke-width="6" fill="none" stroke-linecap="round"/>
         `;
+      } else if (p.panelNum === 4) {
+        innerArt = `
+          <circle cx="180" cy="110" rx="24" ry="24" fill="${skin}" stroke="${ink}" stroke-width="3"/>
+          <circle cx="173" cy="108" r="6" fill="none" stroke="${ink}" stroke-width="2"/><circle cx="187" cy="108" r="6" fill="none" stroke="${ink}" stroke-width="2"/>
+          <rect x="160" y="134" width="45" height="70" fill="${isBW ? '#0f172a' : '#7c2d12'}" stroke="${ink}" stroke-width="3"/>
+          <circle cx="270" cy="95" r="28" fill="${hair}" stroke="${ink}" stroke-width="3"/>
+          <path d="M270,120 L245,120 L230,195 L285,195 Z" fill="${dress}" stroke="${ink}" stroke-width="3"/>
+          <path d="M245,130 Q205,100 185,86" stroke="${ink}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+          <circle cx="75" cy="105" r="20" fill="${skin}" stroke="${ink}" stroke-width="2.5"/>
+          <rect x="55" y="125" width="40" height="75" fill="${suit}" stroke="${ink}" stroke-width="2.5"/>
+        `;
+      } else if (p.panelNum === 5) {
+        innerArt = `
+          <rect x="40" y="140" width="100" height="60" rx="10" fill="${isBW ? '#475569' : '#0369a1'}" stroke="${ink}" stroke-width="3"/>
+          <ellipse cx="90" cy="130" rx="18" ry="18" fill="${skin}" stroke="${ink}" stroke-width="2"/>
+          <circle cx="240" cy="100" r="24" fill="${skin}" stroke="${ink}" stroke-width="3"/>
+          <path d="M230,118 Q240,126 250,118" stroke="${ink}" stroke-width="2" fill="none"/>
+          <rect x="215" y="124" width="50" height="75" fill="${isBW ? '#0f172a' : '#7c2d12'}" stroke="${ink}" stroke-width="3"/>
+        `;
       } else {
-        // Panel 4: Blondie patting Pop's head, Dagwood breaking 4th wall
-        figuresSVG = `
-          <!-- Pop smiling sheepishly -->
-          <circle cx="180" cy="110" rx="24" ry="24" fill="${skinTone}" stroke="${inkColor}" stroke-width="3"/>
-          <circle cx="173" cy="108" r="6" fill="none" stroke="${inkColor}" stroke-width="2"/>
-          <circle cx="187" cy="108" r="6" fill="none" stroke="${inkColor}" stroke-width="2"/>
-          <path d="M172,122 Q180,130 188,122" stroke="${inkColor}" stroke-width="2.5" fill="none"/>
-          <rect x="160" y="134" width="45" height="70" fill="${isBW ? '#0f172a' : '#7c2d12'}" stroke="${inkColor}" stroke-width="3"/>
-
-          <!-- Blondie reaching over and patting head -->
-          <circle cx="270" cy="95" r="28" fill="${hairBlonde}" stroke="${inkColor}" stroke-width="3"/>
-          <path d="M270,120 L245,120 L230,195 L285,195 Z" fill="${dressColor}" stroke="${inkColor}" stroke-width="3"/>
-          <path d="M245,130 Q205,100 185,86" stroke="${inkColor}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-          <circle cx="184" cy="85" r="5" fill="${skinTone}"/>
-
-          <!-- Dagwood facing reader on left -->
-          <circle cx="75" cy="105" r="20" fill="${skinTone}" stroke="${inkColor}" stroke-width="2.5"/>
-          <path d="M60,95 Q75,70 90,95" fill="${inkColor}"/>
-          <path d="M58,90 Q45,75 50,65 Q60,78 64,88" fill="${inkColor}"/>
-          <!-- Eyebrows raised directly to viewer -->
-          <ellipse cx="68" cy="102" rx="2.5" ry="4" fill="${inkColor}"/>
-          <ellipse cx="82" cy="102" rx="2.5" ry="4" fill="${inkColor}"/>
-          <line x1="64" y1="94" x2="72" y2="92" stroke="${inkColor}" stroke-width="2"/>
-          <line x1="78" y1="92" x2="86" y2="94" stroke="${inkColor}" stroke-width="2"/>
-          <rect x="55" y="125" width="40" height="75" fill="${suitColor}" stroke="${inkColor}" stroke-width="2.5"/>
+        innerArt = `
+          <rect x="0" y="150" width="400" height="55" fill="${isBW ? '#e2e8f0' : '#fed7aa'}" stroke="${ink}" stroke-width="3"/>
+          <ellipse cx="200" cy="120" rx="20" ry="30" fill="${isBW ? '#fff' : '#f43f5e'}" stroke="${ink}" stroke-width="2"/>
+          <circle cx="100" cy="95" r="20" fill="${skin}" stroke="${ink}" stroke-width="2.5"/>
+          <circle cx="94" cy="92" r="3" fill="${ink}"/><circle cx="106" cy="92" r="3" fill="${ink}"/>
+          <circle cx="280" cy="95" r="22" fill="${skin}" stroke="${ink}" stroke-width="2.5"/>
         `;
       }
 
       return `
         <svg viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg">
-          <!-- Background & Horizon Line -->
-          <rect width="400" height="270" fill="${bgFill}"/>
-          <line x1="0" y1="205" x2="400" y2="205" stroke="${inkColor}" stroke-width="3"/>
-          
-          <!-- Figures -->
-          ${figuresSVG}
-
-          <!-- Visual Scene Description Watermark -->
+          <rect width="400" height="270" fill="${bg}"/>
+          <line x1="0" y1="205" x2="400" y2="205" stroke="${ink}" stroke-width="3"/>
+          ${innerArt}
           <text x="12" y="258" font-family="system-ui, sans-serif" font-size="11" font-style="italic" fill="#64748b">
-            ${escapeHtml(panelData.visual.slice(0, 52))}...
+            ${escapeHtml(p.visual.slice(0, 52))}...
           </text>
         </svg>
       `;
     }
 
-    // --- STORE / DOWNLOAD COMIC STRIP PNG ---
+    // --- DOWNLOAD COMIC STRIP PNG ---
     function downloadComicStripPNG() {
-      const container = document.getElementById('comicCanvasContainer');
-      const panels = activeComicData.panels;
-      const count = panels.length;
+      if (!activeComicData) return;
+      const count = activeComicData.panels.length;
       
       const canvas = document.createElement('canvas');
       canvas.width = count === 6 ? 1800 : 1600;
       canvas.height = 700;
       const ctx = canvas.getContext('2d');
 
-      // Newsprint canvas background
       ctx.fillStyle = currentSettings.color === 'B&W' ? "#fcfbf9" : "#fdf6e2";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Header title
       ctx.fillStyle = "#111827";
       ctx.font = "bold 32px Impact, sans-serif";
       ctx.textAlign = "center";
@@ -1048,18 +971,16 @@ Return ONLY valid JSON matching this schema:
       const panelWidth = Math.floor((canvas.width - ((count + 1) * 20)) / count);
       const panelHeight = 580;
 
-      panels.forEach((p, idx) => {
+      activeComicData.panels.forEach((p, idx) => {
         const x = 20 + idx * (panelWidth + 20);
         const y = 70;
 
-        // Panel border
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(x, y, panelWidth, panelHeight);
         ctx.lineWidth = 4;
         ctx.strokeStyle = "#111827";
         ctx.strokeRect(x, y, panelWidth, panelHeight);
 
-        // Panel Tag
         ctx.fillStyle = "#111827";
         ctx.fillRect(x, y, 90, 28);
         ctx.fillStyle = "#ffffff";
@@ -1067,7 +988,6 @@ Return ONLY valid JSON matching this schema:
         ctx.textAlign = "left";
         ctx.fillText(`PANEL ${p.panelNum}`, x + 10, y + 20);
 
-        // Speech bubble text
         ctx.fillStyle = "#111827";
         ctx.font = "bold 15px Comic Sans MS, sans-serif";
         wrapText(ctx, p.dialogue, x + 15, y + 430, panelWidth - 30, 22);
