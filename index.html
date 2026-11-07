@@ -1,1 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Funnies Generator & Public Domain Comic Archive Agent</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-main: #212529;
+      --text-muted: #6c757d;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --success: #15803d;
+      --border-color: #d1d5db;
+      --font-scale: 1;
+      --panel-bg: #fdfbf7;
+    }
 
+    body.large-text { --font-scale: 1.25; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-size: calc(1rem * var(--font-scale));
+      line-height: 1.5;
+    }
+
+    header {
+      background-color: #1e293b;
+      color: #ffffff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: calc(1.35rem * var(--font-scale));
+      font-weight: 700;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1.1rem;
+      font-size: calc(0.95rem * var(--font-scale));
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.15s ease-in-out;
+      text-decoration: none;
+    }
+
+    .btn-primary { background-color: var(--primary); color: #fff; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-success { background-color: var(--success); color: #fff; }
+    .btn-success:hover { background-color: #166534; }
+    .btn-outline { background-color: transparent; border-color: #94a3b8; color: #f8fafc; }
+    .btn-outline:hover { background-color: #334155; }
+    .btn-secondary { background-color: #475569; color: #fff; }
+    .btn-secondary:hover { background-color: #334155; }
+    .btn-gemini { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; }
+    .btn-gemini:hover { opacity: 0.95; }
+    .btn-sm { padding: 0.4rem 0.75rem; font-size: calc(0.85rem * var(--font-scale)); }
+
+    nav {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      padding: 0 1.5rem;
+      gap: 0.5rem;
+      overflow-x: auto;
+    }
+
+    .nav-tab {
+      padding: 0.9rem 1.2rem;
+      border: none;
+      background: none;
+      font-size: calc(1rem * var(--font-scale));
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    main {
+      max-width: 1250px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: calc(1.15rem * var(--font-scale));
+      font-weight: 700;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pill-btn {
+      padding: 0.5rem 0.9rem;
+      border: 1px solid var(--border-color);
+      background-color: #f8fafc;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: calc(0.9rem * var(--font-scale));
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .pill-btn:hover { background-color: #e2e8f0; }
+    .pill-btn.active {
+      background-color: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .banner-info {
+      background-color: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 0.85rem 1.1rem;
+      margin-bottom: 1.25rem;
+      border-radius: 0 4px 4px 0;
+      font-size: calc(0.9rem * var(--font-scale));
+    }
+
+    .instruction-callout {
+      background-color: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .instruction-callout ol {
+      margin: 0.5rem 0 0 1.2rem;
+      padding: 0;
+    }
+
+    .instruction-callout li {
+      margin-bottom: 0.35rem;
+    }
+
+    .prompt-box {
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: calc(0.9rem * var(--font-scale));
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 1.2rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 12px;
+      font-size: calc(0.8rem * var(--font-scale));
+      font-weight: bold;
+    }
+    .status-success { background: #dcfce7; color: #166534; }
+    .status-warning { background: #fef9c3; color: #854d0e; }
+
+    /* Comic Canvas Display for Manually Uploaded / Pasted Images */
+    .comic-strip-container {
+      background: #fdfbf7;
+      padding: 1.25rem;
+      border-radius: 8px;
+      border: 3px solid #111827;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      margin-top: 1.5rem;
+    }
+
+    .comic-strip-header {
+      text-align: center;
+      font-family: "Impact", "Arial Black", sans-serif;
+      text-transform: uppercase;
+      font-size: calc(1.5rem * var(--font-scale));
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+      border-bottom: 2px dashed #334155;
+      padding-bottom: 0.5rem;
+    }
+
+    .comic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .comic-panel-box {
+      background: #ffffff;
+      border: 2px solid #111827;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-height: 440px;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
+    }
+
+    .panel-tag {
+      background: #111827;
+      color: #fff;
+      font-weight: bold;
+      padding: 3px 8px;
+      font-size: calc(0.8rem * var(--font-scale));
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+    }
+
+    .panel-canvas-slot {
+      height: 270px;
+      width: 100%;
+      background-color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 2px solid #111827;
+      position: relative;
+    }
+
+    .panel-canvas-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .panel-dialogue-slot {
+      padding: 0.75rem;
+      font-size: calc(0.85rem * var(--font-scale));
+      background-color: #fafaf9;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .speech-bubble {
+      background: #fff;
+      border: 2px solid #111827;
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+      box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+    }
+
+    .sound-fx {
+      font-family: "Impact", sans-serif;
+      color: #dc2626;
+      font-size: calc(1.2rem * var(--font-scale));
+      text-align: center;
+      text-transform: uppercase;
+      margin: 4px 0;
+      letter-spacing: 1px;
+    }
+
+    /* Print Dossier Formatting */
+    .print-dossier { display: none; }
+
+    @media print {
+      body { background: #fff !important; color: #000 !important; font-size: 11pt !important; }
+      header, nav, .card, .btn, .banner-info { display: none !important; }
+      
+      .comic-strip-container {
+        display: block !important;
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        page-break-after: always;
+        break-after: page;
+        margin: 0 !important;
+        padding: 0.5cm !important;
+      }
+
+      .comic-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+
+      .comic-panel-box {
+        min-height: 280px !important;
+        box-shadow: none !important;
+        border: 1.5px solid #000 !important;
+      }
+
+      .panel-canvas-slot { height: 180px !important; }
+
+      .print-dossier {
+        display: block !important;
+        page-break-before: always;
+        break-before: page;
+        padding: 1cm;
+        background: #fff;
+      }
+
+      .print-dossier h2 {
+        border-bottom: 2px solid #000;
+        padding-bottom: 4px;
+        margin-top: 0;
+      }
+
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+      }
+
+      .print-table th, .print-table td {
+        border: 1px solid #666;
+        padding: 6px 10px;
+        text-align: left;
+        font-size: 10pt;
+      }
+
+      .print-table th { background-color: #f1f5f9; }
+      .print-script-pre {
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 9.5pt;
+        background: #f8fafc;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>Funnies Generator & Public Domain Comic Archive Agent</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" id="largeTextToggle" onclick="toggleLargeText()">Aa Large Text</button>
+      <a href="https://gemini.google.com/notebook/345981ec-f63d-4754-9eef-b705464ed5b0" target="_blank" class="btn btn-outline">📜 Funnies Reference Engine ↗</a>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-tab active" onclick="switchTab('generator')">🎨 Funnies Generator</button>
+    <button class="nav-tab" onclick="switchTab('export')">📚 NotebookLM Export</button>
+    <button class="nav-tab" onclick="switchTab('admin')">⚙️ Administrator & Settings</button>
+  </nav>
+
+  <main>
+    <!-- TAB 1: FUNNIES GENERATOR -->
+    <div id="tab-generator" class="tab-content active">
+      <div class="banner-info">
+        <strong>Manual Image Workflow Active:</strong> Generate an authentic 1930s comic prompt script, copy it with one click, and open Gemini to render the exact image directly.
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">SECTION A: Series & Characters</h2>
+        <div class="form-group">
+          <label>Select Comic Strip Series:</label>
+          <div class="pill-group" id="seriesGroup">
+            <button class="pill-btn active" onclick="selectSinglePill('seriesGroup', this, 'Blondie & Dagwood')">Blondie & Dagwood (1930)</button>
+            <button class="pill-btn" onclick="selectSinglePill('seriesGroup', this, 'Popeye / Thimble Theatre')">Popeye / Thimble Theatre (1929)</button>
+            <button class="pill-btn" onclick="selectSinglePill('seriesGroup', this, 'Bringing Up Father')">Bringing Up Father (1913)</button>
+            <button class="pill-btn" onclick="selectSinglePill('seriesGroup', this, 'Krazy Kat')">Krazy Kat (1913)</button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+          <div class="form-group">
+            <label>Panel Count:</label>
+            <div class="pill-group" id="panelCountGroup">
+              <button class="pill-btn active" onclick="selectSinglePill('panelCountGroup', this, '4-Panel')">4-Panel Daily</button>
+              <button class="pill-btn" onclick="selectSinglePill('panelCountGroup', this, '6-Panel')">6-Panel Sunday</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Art Style & Color:</label>
+            <div class="pill-group" id="colorGroup">
+              <button class="pill-btn active" onclick="selectSinglePill('colorGroup', this, 'B&W')">Classic B&W Line Art</button>
+              <button class="pill-btn" onclick="selectSinglePill('colorGroup', this, 'Color')">Vintage Sunday Newsprint Color</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Active Characters:</label>
+          <div class="pill-group" id="characterPills">
+            <button class="pill-btn active" onclick="togglePill(this)">✓ Dagwood Bumstead</button>
+            <button class="pill-btn active" onclick="togglePill(this)">✓ Blondie Boopadoop</button>
+            <button class="pill-btn" onclick="togglePill(this)">J. Bolling Bumstead (Pop)</button>
+            <button class="pill-btn" onclick="togglePill(this)">Daisy the Dog</button>
+            <button class="pill-btn" onclick="togglePill(this)">Irma</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">SECTION B: Gag Tone & Conflict</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div>
+            <label>Overall Tone:</label>
+            <div class="pill-group" id="toneGroup">
+              <button class="pill-btn active" onclick="selectSinglePill('toneGroup', this, 'Domestic / Warm')">Domestic / Warm</button>
+              <button class="pill-btn" onclick="selectSinglePill('toneGroup', this, 'Slapstick / Chaos')">Slapstick / Chaos</button>
+              <button class="pill-btn" onclick="selectSinglePill('toneGroup', this, 'Satirical')">Satirical / Wry</button>
+            </div>
+          </div>
+
+          <div>
+            <label>Conflict Engine:</label>
+            <div class="pill-group" id="conflictGroup">
+              <button class="pill-btn active" onclick="selectSinglePill('conflictGroup', this, 'Domestic Routine')">Domestic Routine</button>
+              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Pop vs. Dagwood')">Pop's Disinheritance</button>
+              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Man vs. Chores')">Man vs. Chores</button>
+            </div>
+          </div>
+
+          <div>
+            <label>Ending Beat:</label>
+            <div class="pill-group" id="endingGroup">
+              <button class="pill-btn active" onclick="selectSinglePill('endingGroup', this, 'Fourth-Wall Break')">Fourth-Wall Break</button>
+              <button class="pill-btn" onclick="selectSinglePill('endingGroup', this, 'Defeated Resignation')">Defeated Resignation</button>
+              <button class="pill-btn" onclick="selectSinglePill('endingGroup', this, 'Cloud of Dust Exit')">Cloud of Dust Exit</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: center;">
+          <button class="btn btn-primary" style="padding: 0.9rem 2rem; font-size: calc(1.1rem * var(--font-scale));" id="generateBtn" onclick="generatePromptPackage()">
+            ✨ Generate Comic Image Prompt Package
+          </button>
+        </div>
+      </div>
+
+      <!-- PROMPT REVIEW & GEMINI BRIDGE CARD -->
+      <div class="card" id="promptReviewCard" style="display: none;">
+        <div class="card-title">
+          <span>Target Comic Image Prompt (Ready for Gemini)</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-success btn-sm" onclick="copyGeminiPrompt()">📋 Copy Prompt</button>
+            <button class="btn btn-gemini btn-sm" onclick="openGeminiChat()">🚀 Open Gemini ↗</button>
+          </div>
+        </div>
+
+        <div class="instruction-callout">
+          <strong>How to generate the visual image in Gemini:</strong>
+          <ol>
+            <li>Click <strong>📋 Copy Prompt</strong> below (or in the top right).</li>
+            <li>Click <strong>🚀 Open Gemini ↗</strong> to open the Gemini chat window in a new tab.</li>
+            <li>Paste (<code>Ctrl + V</code>) the prompt into Gemini and press Enter to generate the authentic comic strip image.</li>
+          </ol>
+        </div>
+
+        <div class="prompt-box" id="geminiPromptText"></div>
+
+        <div style="margin-top: 1.25rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+          <button class="btn btn-success" style="padding: 0.85rem 1.6rem;" onclick="copyGeminiPrompt()">
+            📋 Copy Image Prompt to Clipboard
+          </button>
+          <button class="btn btn-gemini" style="padding: 0.85rem 1.8rem;" onclick="openGeminiChat()">
+            🚀 Open Gemini in New Tab ↗
+          </button>
+        </div>
+      </div>
+
+      <!-- SCRIPT REVIEW CARD -->
+      <div class="card" id="scriptReviewCard" style="display: none;">
+        <div class="card-title">
+          <span>Dialogue & Staging Transcript</span>
+          <button class="btn btn-outline btn-sm" style="color: var(--primary); border-color: var(--primary);" onclick="copyScriptTranscript()">📋 Copy Transcript</button>
+        </div>
+        <div id="scriptOutputText" style="white-space: pre-wrap; font-family: monospace; background: #f8fafc; padding: 1rem; border-radius: 4px; border: 1px solid var(--border-color);"></div>
+      </div>
+
+      <!-- COMIC CANVAS CONTAINER (STAGED FOR REVIEW & PRINTING) -->
+      <div class="comic-strip-container" id="comicCanvasContainer" style="display: none;">
+        <div class="comic-strip-header" id="comicCanvasTitle">BLONDIE & DAGWOOD</div>
+        <div class="comic-grid" id="comicPanelGrid"></div>
+        <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <span style="font-size: calc(0.85rem * var(--font-scale)); color: #475569;">✓ Verified Pre-1931 Public Domain Style • Chic Young Continuity</span>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="uploadRenderedImage()">📥 Insert Gemini Image Here</button>
+            <button class="btn btn-primary btn-sm" onclick="downloadComicStripPNG()">💾 Store / Download Strip Image (.PNG)</button>
+            <button class="btn btn-success btn-sm" onclick="window.print()">🖨️ Print / Save Comic Strip & Dossier (PDF)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRINT DOSSIER (PAGE 2 ON PRINT) -->
+      <div class="print-dossier" id="printDossierArea">
+        <h2>Comic Strip Production Dossier & Script Transcript</h2>
+        <table class="print-table">
+          <tr>
+            <th>Comic Series:</th>
+            <td id="dossierSeries">Blondie & Dagwood</td>
+            <th>Layout / Panels:</th>
+            <td id="dossierPanels">4-Panel Daily</td>
+          </tr>
+          <tr>
+            <th>Art & Color Mode:</th>
+            <td id="dossierColor">Classic B&W Line Art</td>
+            <th>Date & Timestamp:</th>
+            <td id="dossierTimestamp">--</td>
+          </tr>
+          <tr>
+            <th>Active Cast:</th>
+            <td id="dossierCast">Dagwood Bumstead, Blondie Boopadoop</td>
+            <th>Conflict Engine:</th>
+            <td id="dossierConflict">Domestic Routine</td>
+          </tr>
+          <tr>
+            <th>Overall Tone:</th>
+            <td id="dossierTone">Domestic / Warm</td>
+            <th>Ending Beat:</th>
+            <td id="dossierEnding">Fourth-Wall Break</td>
+          </tr>
+        </table>
+        <h3>Full Resulting Prompt Script:</h3>
+        <div class="print-script-pre" id="dossierScriptText"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: NOTEBOOKLM EXPORT -->
+    <div id="tab-export" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>NotebookLM Staged Transcripts</span>
+          <button class="btn btn-primary btn-sm" onclick="copyMasterNotebookText()">📋 Copy All for NotebookLM</button>
+        </div>
+        <div id="exportStagingArea">
+          <p style="color: var(--text-muted);">Generate a script to stage transcripts ready for NotebookLM.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ADMINISTRATOR & SETTINGS -->
+    <div id="tab-admin" class="tab-content">
+      <div class="card">
+        <h2 class="card-title">Google AI Studio API Key Manager</h2>
+        <div class="banner-info">
+          Your key is saved exclusively in this browser's private local vault (`localStorage`). It is never uploaded to GitHub or visible publicly.
+        </div>
+        <div class="form-group">
+          <label for="apiKeyInput">Gemini API Key (Google AI Studio):</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="apiKeyInput" style="flex: 1; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="AIzaSy...">
+            <button class="btn btn-secondary btn-sm" onclick="toggleKeyVisibility()">Show/Hide</button>
+            <button class="btn btn-primary btn-sm" onclick="saveApiKey()">Save Key</button>
+          </div>
+          <div style="margin-top: 0.5rem;" id="keyStatusBadge">
+            <span class="status-badge status-warning">No Key Configured</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentSettings = {
+      series: 'Blondie & Dagwood',
+      panels: '4-Panel',
+      color: 'B&W',
+      tone: 'Domestic / Warm',
+      conflict: 'Domestic Routine',
+      ending: 'Fourth-Wall Break'
+    };
+
+    let activeComicData = null;
+    let fullGeminiPrompt = "";
+
+    function toggleLargeText() {
+      document.body.classList.toggle('large-text');
+      localStorage.setItem('funnies_large_text', document.body.classList.contains('large-text'));
+    }
+    if (localStorage.getItem('funnies_large_text') === 'true') {
+      document.body.classList.add('large-text');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function selectSinglePill(groupId, btn, value) {
+      document.getElementById(groupId).querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (groupId === 'seriesGroup') currentSettings.series = value;
+      if (groupId === 'panelCountGroup') currentSettings.panels = value;
+      if (groupId === 'colorGroup') currentSettings.color = value;
+      if (groupId === 'toneGroup') currentSettings.tone = value;
+      if (groupId === 'conflictGroup') currentSettings.conflict = value;
+      if (groupId === 'endingGroup') currentSettings.ending = value;
+    }
+
+    function togglePill(btn) {
+      btn.classList.toggle('active');
+      if (btn.classList.contains('active')) {
+        if (!btn.innerText.startsWith('✓ ')) btn.innerText = '✓ ' + btn.innerText;
+      } else {
+        btn.innerText = btn.innerText.replace('✓ ', '');
+      }
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (!key) { alert('Please enter a valid key.'); return; }
+      localStorage.setItem('gemini_api_key', key);
+      updateKeyStatus();
+      alert('Key saved successfully in your local browser vault!');
+    }
+
+    function updateKeyStatus() {
+      const key = localStorage.getItem('gemini_api_key');
+      const badge = document.getElementById('keyStatusBadge');
+      const input = document.getElementById('apiKeyInput');
+      if (key && key.length > 5) {
+        badge.innerHTML = '<span class="status-badge status-success">✓ Key Active in Browser Vault (...' + key.slice(-4) + ')</span>';
+        input.value = key;
+      } else {
+        badge.innerHTML = '<span class="status-badge status-warning">No Key Configured</span>';
+      }
+    }
+
+    function toggleKeyVisibility() {
+      const input = document.getElementById('apiKeyInput');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    // --- GENERATE SCRIPT & BUILD TARGET GEMINI IMAGE PROMPT ---
+    async function generatePromptPackage() {
+      const btn = document.getElementById('generateBtn');
+      btn.innerText = '⏳ Drafting Script & Assembling Prompt...';
+      btn.disabled = true;
+
+      const activeChars = [];
+      document.querySelectorAll('#characterPills .pill-btn.active').forEach(b => {
+        activeChars.push(b.innerText.replace('✓ ', '').trim());
+      });
+
+      const apiKey = localStorage.getItem('gemini_api_key');
+      let scriptData = null;
+
+      if (apiKey && apiKey.length > 10) {
+        try {
+          scriptData = await callGeminiAPI(apiKey, activeChars);
+        } catch (e) {
+          console.warn('API script error, falling back to grounded template', e);
+          scriptData = buildGroundedTemplate(activeChars);
+        }
+      } else {
+        scriptData = buildGroundedTemplate(activeChars);
+      }
+
+      activeComicData = scriptData;
+
+      // Construct the comprehensive single prompt ready for Gemini's image generator
+      fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);
+
+      // Display the prompt card
+      document.getElementById('promptReviewCard').style.display = 'block';
+      document.getElementById('geminiPromptText').innerText = fullGeminiPrompt;
+
+      // Display the script transcript card
+      document.getElementById('scriptReviewCard').style.display = 'block';
+      let transcriptText = `=== ${scriptData.title} ===\n\n`;
+      scriptData.panels.forEach(p => {
+        transcriptText += `[PANEL ${p.panelNum}]\nVisual Staging: ${p.visual}\nDialogue: ${p.dialogue}\n`;
+        if (p.sfx) transcriptText += `Sound Effect: ${p.sfx}\n`;
+        transcriptText += `-----------------------------------------\n`;
+      });
+      document.getElementById('scriptOutputText').innerText = transcriptText;
+
+      // Build staged panel canvas container
+      renderPanelStagingSlots(scriptData);
+
+      // Populate print dossier
+      populatePrintDossier(activeChars, scriptData);
+
+      btn.innerText = '✨ Generate Comic Image Prompt Package';
+      btn.disabled = false;
+
+      // Scroll to prompt review
+      document.getElementById('promptReviewCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function buildFormattedGeminiPrompt(data, chars) {
+      const isBW = currentSettings.color === 'B&W';
+      const panelCount = currentSettings.panels;
+      
+      const artStyle = isBW
+        ? "Authentic 1930 vintage newspaper comic strip, hand-drawn black ink line art with classic newspaper cross-hatching, high-contrast black and white only, newsprint texture, clean thick comic panel borders, Chic Young Blondie and Dagwood style."
+        : "Authentic 1930 vintage Sunday funny comic strip, four-color newsprint palette with classic Ben-Day dot shading, vintage watercolor wash, classic line art, Chic Young style.";
+
+      let prompt = `Create a complete ${panelCount} horizontal comic strip in the style of Chic Young's classic 1930 newspaper funnies "${currentSettings.series}".\n\n`;
+      prompt += `Art Style: ${artStyle}\n`;
+      prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp black borders and dialogue speech bubbles.\n`;
+      prompt += `Featured Characters: ${chars.join(', ')}\n\n`;
+      prompt += `PANEL DESCRIPTIONS:\n`;
+
+      data.panels.forEach(p => {
+        prompt += `Panel ${p.panelNum}:\n`;
+        prompt += `- Visual Scene: ${p.visual}\n`;
+        prompt += `- Speech Bubble: ${p.dialogue}\n`;
+        if (p.sfx) prompt += `- Sound Effect: ${p.sfx} in bold red comic text\n`;
+        prompt += `\n`;
+      });
+
+      prompt += `Render the comic strip as a single vintage newspaper image showing all panels clearly with readable dialogue.`;
+      return prompt;
+    }
+
+    function buildGroundedTemplate(chars) {
+      const isSix = currentSettings.panels === '6-Panel';
+      const c1 = chars[0] || 'Dagwood';
+      const c2 = chars[1] || 'Blondie';
+
+      const panels = [
+        {
+          panelNum: 1,
+          visual: `${c1} in front of his wardrobe, frantically pulling out hats and ties, looking panicked with wide eyes and disheveled hair.`,
+          dialogue: `${c1}: "Great Scott! Where is my lucky necktie? Pop will fire me if I am five seconds late to the office!"`,
+          sfx: "RUSTLE! CLATTER!"
+        },
+        {
+          panelNum: 2,
+          visual: `${c2} in authentic 1930 flapper attire by the radio, striking an exuberant Charleston pose with hands on hips.`,
+          dialogue: `${c2}: "Cheer up, Daggy! When I am around, nobody stays blue—I feel so boop-boop-a-doop!"`,
+          sfx: "DING DONG!"
+        },
+        {
+          panelNum: 3,
+          visual: `Pop Bumstead bursts through the doorway brandishing his cane, face red with rage while ${c1} sweats nervously.`,
+          dialogue: `Pop: "Bumstead! Still gallivanting with chorus flappers? You are disinherited without a single dime!"`,
+          sfx: "WHAM!"
+        },
+        {
+          panelNum: 4,
+          visual: `${c2} playfully pats Pop on his bald head; Pop looks astonished and disarmed while ${c1} raises eyebrows to the reader.`,
+          dialogue: `${c2}: "Now now, Pops! Play your cards right and you can buy us both a tall ice cream soda!"`,
+          sfx: "PAT! PAT!"
+        }
+      ];
+
+      if (isSix) {
+        panels.push(
+          {
+            panelNum: 5,
+            visual: `Pop smiling sheepishly, reaching into his pocket while ${c1} collapses onto the armchair in relief.`,
+            dialogue: `Pop: "Well... five cents at the corner soda parlor never broke a railroad dynasty."`,
+            sfx: "CHUCKLE"
+          },
+          {
+            panelNum: 6,
+            visual: `All three at the soda fountain, ${c1} staring wide-eyed at an enormous six-scoop sundae bill.`,
+            dialogue: `${c1}: "And somehow Pop stuck me with the whole tab!"`,
+            sfx: "GULP!"
+          }
+        );
+      }
+
+      return {
+        title: `${currentSettings.series.toUpperCase()} — DAILY FUNNIES`,
+        panels: panels
+      };
+    }
+
+    async function callGeminiAPI(apiKey, chars) {
+      const prompt = `Write a classic 1930 newspaper comic strip script for "${currentSettings.series}".
+Characters: ${chars.join(', ')}.
+Layout: ${currentSettings.panels}.
+Color: ${currentSettings.color}.
+Tone: ${currentSettings.tone}.
+Conflict: ${currentSettings.conflict}.
+Ending: ${currentSettings.ending}.
+Return ONLY valid JSON matching this schema:
+{
+  "title": "Comic Strip Title",
+  "panels": [
+    {
+      "panelNum": 1,
+      "visual": "Precise visual action and character expressions",
+      "dialogue": "Character: Spoken line",
+      "sfx": "BOLD SFX OR EMPTY"
+    }
+  ]
+}`;
+
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+
+      const data = await res.json();
+      const rawText = data.candidates[0].content.parts[0].text;
+      return JSON.parse(rawText);
+    }
+
+    // --- MANUAL WORKFLOW HELPERS ---
+    function copyGeminiPrompt() {
+      if (!fullGeminiPrompt) {
+        alert('Please generate the prompt first.');
+        return;
+      }
+      navigator.clipboard.writeText(fullGeminiPrompt);
+      alert('✓ Prompt copied to clipboard!\n\nNext: Click "Open Gemini", paste the prompt, and press Enter to create your image.');
+    }
+
+    function openGeminiChat() {
+      window.open('https://gemini.google.com/app', '_blank');
+    }
+
+    function copyScriptTranscript() {
+      navigator.clipboard.writeText(document.getElementById('scriptOutputText').innerText);
+      alert('Transcript copied to clipboard!');
+    }
+
+    // --- STAGING PANEL SLOTS & INSERTION ---
+    function renderPanelStagingSlots(data) {
+      const container = document.getElementById('comicCanvasContainer');
+      const title = document.getElementById('comicCanvasTitle');
+      const grid = document.getElementById('comicPanelGrid');
+
+      container.style.display = 'block';
+      title.innerText = data.title;
+      grid.innerHTML = '';
+
+      data.panels.forEach(p => {
+        const panelEl = document.createElement('div');
+        panelEl.className = 'comic-panel-box';
+        panelEl.id = `panel-box-${p.panelNum}`;
+
+        panelEl.innerHTML = `
+          <div class="panel-tag">PANEL ${p.panelNum}</div>
+          <div class="panel-canvas-slot" id="slot-${p.panelNum}">
+            <div style="text-align: center; color: #64748b; padding: 1rem; font-size: 0.9rem;">
+              <p style="margin: 0 0 0.5rem 0;"><strong>Panel ${p.panelNum} Ready</strong></p>
+              <p style="margin: 0; font-style: italic; font-size: 0.8rem;">${escapeHtml(p.visual.slice(0, 55))}...</p>
+            </div>
+          </div>
+          <div class="panel-dialogue-slot">
+            <div class="speech-bubble">${escapeHtml(p.dialogue)}</div>
+            ${p.sfx ? `<div class="sound-fx">${escapeHtml(p.sfx)}</div>` : ''}
+          </div>
+        `;
+        grid.appendChild(panelEl);
+      });
+    }
+
+    function uploadRenderedImage() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const container = document.getElementById('comicCanvasContainer');
+          const grid = document.getElementById('comicPanelGrid');
+          // Replace panel grid with the single uploaded full comic strip
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; border: 2px solid #111827; background: #fff; text-align: center; overflow: hidden;">
+              <img src="${event.target.result}" alt="Rendered Comic Strip" style="width: 100%; height: auto; display: block;">
+            </div>
+          `;
+          container.scrollIntoView({ behavior: 'smooth' });
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+
+    function populatePrintDossier(chars, data) {
+      document.getElementById('dossierSeries').innerText = currentSettings.series;
+      document.getElementById('dossierPanels').innerText = currentSettings.panels;
+      document.getElementById('dossierColor').innerText = currentSettings.color === 'B&W' ? 'Classic B&W Line Art' : 'Vintage Sunday Newsprint Color';
+      document.getElementById('dossierTimestamp').innerText = new Date().toLocaleString();
+      document.getElementById('dossierCast').innerText = chars.join(', ');
+      document.getElementById('dossierConflict').innerText = currentSettings.conflict;
+      document.getElementById('dossierTone').innerText = currentSettings.tone;
+      document.getElementById('dossierEnding').innerText = currentSettings.ending;
+
+      let fullScript = `TITLE: ${data.title}\n\n`;
+      data.panels.forEach(p => {
+        fullScript += `PANEL ${p.panelNum}:\n`;
+        fullScript += `  Visual: ${p.visual}\n`;
+        fullScript += `  Dialogue: ${p.dialogue}\n`;
+        if (p.sfx) fullScript += `  SFX: ${p.sfx}\n`;
+        fullScript += `\n`;
+      });
+      document.getElementById('dossierScriptText').innerText = fullScript;
+    }
+
+    function downloadComicStripPNG() {
+      if (!activeComicData) return;
+      const count = activeComicData.panels.length;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = count === 6 ? 1800 : 1600;
+      canvas.height = 700;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = currentSettings.color === 'B&W' ? "#fcfbf9" : "#fdf6e2";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "bold 32px Impact, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(activeComicData.title, canvas.width / 2, 45);
+
+      const panelWidth = Math.floor((canvas.width - ((count + 1) * 20)) / count);
+      const panelHeight = 580;
+
+      activeComicData.panels.forEach((p, idx) => {
+        const x = 20 + idx * (panelWidth + 20);
+        const y = 70;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(x, y, panelWidth, panelHeight);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#111827";
+        ctx.strokeRect(x, y, panelWidth, panelHeight);
+
+        ctx.fillStyle = "#111827";
+        ctx.fillRect(x, y, 90, 28);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`PANEL ${p.panelNum}`, x + 10, y + 20);
+
+        ctx.fillStyle = "#111827";
+        ctx.font = "bold 15px Comic Sans MS, sans-serif";
+        wrapText(ctx, p.dialogue, x + 15, y + 430, panelWidth - 30, 22);
+
+        if (p.sfx) {
+          ctx.fillStyle = "#dc2626";
+          ctx.font = "bold 26px Impact, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(p.sfx, x + panelWidth / 2, y + 540);
+        }
+      });
+
+      const a = document.createElement('a');
+      a.download = `${currentSettings.series.toLowerCase().replace(/[^a-z0-9]/g, '_')}_comic_strip_${new Date().toISOString().slice(0,10)}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
+
+    function copyMasterNotebookText() {
+      const text = `# FUNNIES REFERENCE ENGINE: COMIC ARCHIVES\n${document.getElementById('scriptOutputText').innerText || 'No active script.'}`;
+      navigator.clipboard.writeText(text);
+      alert('Copied for NotebookLM!');
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateKeyStatus();
+    });
+  </script>
+</body>
+</html>
