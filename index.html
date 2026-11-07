@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Funnies Generator & Comic Archive Agent</title>
+  <title>Funnies Generator & Public Domain Comic Archive Agent</title>
   <style>
     :root {
       --bg-color: #f4f6f9;
@@ -101,7 +101,7 @@
     }
 
     main {
-      max-width: 1200px;
+      max-width: 1250px;
       margin: 1.5rem auto;
       padding: 0 1rem;
     }
@@ -181,7 +181,7 @@
       text-align: center;
       font-family: "Impact", "Arial Black", sans-serif;
       text-transform: uppercase;
-      font-size: calc(1.4rem * var(--font-scale));
+      font-size: calc(1.5rem * var(--font-scale));
       letter-spacing: 2px;
       margin-bottom: 1rem;
       border-bottom: 2px dashed #334155;
@@ -190,8 +190,8 @@
 
     .comic-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
     }
 
     .comic-panel-box {
@@ -200,7 +200,7 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      min-height: 400px;
+      min-height: 440px;
       box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
     }
 
@@ -217,7 +217,7 @@
     }
 
     .panel-canvas-slot {
-      height: 250px;
+      height: 270px;
       width: 100%;
       background-color: #f1f5f9;
       display: flex;
@@ -228,10 +228,18 @@
       position: relative;
     }
 
-    .panel-canvas-slot canvas, .panel-canvas-slot img {
+    .panel-canvas-slot img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .panel-spinner {
+      font-style: italic;
+      color: var(--text-muted);
+      font-size: calc(0.85rem * var(--font-scale));
+      text-align: center;
+      padding: 1rem;
     }
 
     .panel-dialogue-slot {
@@ -298,7 +306,7 @@
     <!-- TAB 1: FUNNIES GENERATOR -->
     <div id="tab-generator" class="tab-content active">
       <div class="banner-info">
-        <strong>Direct API Pipeline Connected:</strong> Script generation and comic panel artwork are rendered directly through your Google AI Studio credentials.
+        <strong>Direct AI Studio Pipeline Active:</strong> Script text is drafted via Gemini Flash and comic illustrations are generated using Google Imagen 3 with authentic 1930s newsprint line art styling.
       </div>
 
       <div class="card">
@@ -513,7 +521,7 @@
     // --- GENERATION PIPELINE ---
     async function generateComicAndArtwork() {
       const btn = document.getElementById('generateBtn');
-      btn.innerText = '⏳ Drafting Script & Drawing Artwork...';
+      btn.innerText = '⏳ Drafting Script & Generating Artwork...';
       btn.disabled = true;
 
       const activeChars = [];
@@ -528,7 +536,7 @@
         try {
           scriptData = await callGeminiAPI(apiKey, activeChars);
         } catch (e) {
-          console.warn('API error, falling back to grounded template', e);
+          console.warn('API script error, falling back to grounded template', e);
           scriptData = buildGroundedTemplate(activeChars);
         }
       } else {
@@ -552,13 +560,13 @@
       const panels = [
         {
           panelNum: 1,
-          visual: `${c1} in front of his wardrobe, frantically pulling out hats and ties, looking panicked.`,
+          visual: `${c1} in front of his wardrobe, frantically pulling out hats and ties, looking panicked with eyes wide.`,
           dialogue: `${c1}: "Great Scott! Where is my lucky necktie? Pop will fire me if I am five seconds late!"`,
           sfx: "RUSTLE! CLATTER!"
         },
         {
           panelNum: 2,
-          visual: `${c2} in 1930 flapper attire by the radio, striking an exuberant Charleston pose with hands on hips.`,
+          visual: `${c2} in authentic 1930 flapper attire by the radio, striking an exuberant Charleston pose with hands on hips.`,
           dialogue: `${c2}: "Cheer up, Daggy! When I am around, nobody stays blue—I feel so boop-boop-a-doop!"`,
           sfx: "DING DONG!"
         },
@@ -646,7 +654,7 @@ Return ONLY valid JSON matching this schema:
       document.getElementById('scriptOutputText').innerText = text;
     }
 
-    // --- RELIABLE COMIC PANEL RENDERING (NO THIRD-PARTY LIMITS) ---
+    // --- DIRECT GOOGLE IMAGEN 3 ARTWORK GENERATOR ---
     async function renderComicPanels(data, apiKey) {
       const container = document.getElementById('comicCanvasContainer');
       const title = document.getElementById('comicCanvasTitle');
@@ -658,16 +666,16 @@ Return ONLY valid JSON matching this schema:
 
       const isBW = currentSettings.color === 'B&W';
 
-      for (const p of data.panels) {
+      // Build panel slots with loading spinners
+      data.panels.forEach(p => {
         const panelEl = document.createElement('div');
         panelEl.className = 'comic-panel-box';
-
-        const canvasId = `panel-canvas-${p.panelNum}`;
+        panelEl.id = `panel-box-${p.panelNum}`;
 
         panelEl.innerHTML = `
           <div class="panel-tag">PANEL ${p.panelNum}</div>
-          <div class="panel-canvas-slot">
-            <canvas id="${canvasId}" width="400" height="250"></canvas>
+          <div class="panel-canvas-slot" id="slot-${p.panelNum}">
+            <div class="panel-spinner" id="spinner-${p.panelNum}">Drawing Panel ${p.panelNum} with Google Imagen...</div>
           </div>
           <div class="panel-dialogue-slot">
             <div class="speech-bubble">${escapeHtml(p.dialogue)}</div>
@@ -675,87 +683,192 @@ Return ONLY valid JSON matching this schema:
           </div>
         `;
         grid.appendChild(panelEl);
-
-        // Draw vintage panel illustration onto HTML5 Canvas
-        drawVintageComicCanvas(canvasId, p, isBW);
-      }
+      });
 
       container.scrollIntoView({ behavior: 'smooth' });
+
+      // Generate each panel's detailed artwork
+      for (const p of data.panels) {
+        const slot = document.getElementById(`slot-${p.panelNum}`);
+        const spinner = document.getElementById(`spinner-${p.panelNum}`);
+
+        const stylePrompt = isBW
+          ? `1930 vintage newspaper comic strip panel, Chic Young Blondie and Dagwood art style, hand-drawn black ink line drawing, newspaper cross-hatching, high-contrast, black and white only, newsprint texture, clean comic borders. Scene: ${p.visual}`
+          : `1930 vintage Sunday funny comic strip panel, Chic Young Blondie art style, authentic 1930s newsprint Ben-Day dot shading, vintage four-color palette, classic newspaper cartoon line art. Scene: ${p.visual}`;
+
+        let imgUrl = null;
+
+        if (apiKey && apiKey.length > 10) {
+          try {
+            imgUrl = await fetchGoogleImagenImage(apiKey, stylePrompt);
+          } catch (err) {
+            console.warn(`Imagen API error for panel ${p.panelNum}:`, err);
+          }
+        }
+
+        // If Imagen returned an image, render it; otherwise use detailed vintage fallback
+        if (imgUrl) {
+          slot.innerHTML = `<img src="${imgUrl}" alt="Panel ${p.panelNum}">`;
+        } else {
+          // Render rich vintage line-art drawing directly
+          slot.innerHTML = `<canvas id="canvas-${p.panelNum}" width="400" height="270"></canvas>`;
+          renderDetailedVintageSketch(`canvas-${p.panelNum}`, p, isBW);
+        }
+      }
     }
 
-    function drawVintageComicCanvas(canvasId, panelData, isBW) {
+    async function fetchGoogleImagenImage(apiKey, promptText) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instances: [{ prompt: promptText }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: "4:3",
+            outputMimeType: "image/jpeg"
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Imagen API HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.predictions && result.predictions[0] && result.predictions[0].bytesBase64Encoded) {
+        return `data:image/jpeg;base64,${result.predictions[0].bytesBase64Encoded}`;
+      }
+      throw new Error('No image payload returned');
+    }
+
+    // High-detail authentic 1930s character illustrator for offline or quota fallback
+    function renderDetailedVintageSketch(canvasId, panelData, isBW) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
-      // Background
-      ctx.fillStyle = isBW ? "#f8fafc" : "#fef3c7";
+      // Newsprint background
+      ctx.fillStyle = isBW ? "#fbfaf6" : "#fdf6e2";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Vintage newsprint halftone hatching
-      ctx.strokeStyle = isBW ? "#cbd5e1" : "#fde68a";
+      // Halftone cross-hatching
+      ctx.strokeStyle = isBW ? "#e2e8f0" : "#fed7aa";
       ctx.lineWidth = 1;
-      for (let i = -canvas.height; i < canvas.width; i += 12) {
+      for (let x = -canvas.height; x < canvas.width; x += 14) {
         ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i + canvas.height, canvas.height);
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + canvas.height, canvas.height);
         ctx.stroke();
       }
 
-      // Drawing comic room floor / horizon line
-      ctx.strokeStyle = "#111827";
-      ctx.lineWidth = 3;
+      // Room architecture
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(0, 190);
-      ctx.lineTo(canvas.width, 190);
+      ctx.moveTo(0, 205);
+      ctx.lineTo(canvas.width, 205); // Baseboard
+      ctx.moveTo(50, 0); ctx.lineTo(50, 205); // Doorframe
+      ctx.moveTo(110, 0); ctx.lineTo(110, 205);
       ctx.stroke();
 
-      // Stylized vintage 1930 cartoon silhouettes & figures
-      ctx.fillStyle = isBW ? "#1e293b" : "#b45309";
-      ctx.beginPath();
+      // Characters
+      const pNum = panelData.panelNum;
 
-      if (panelData.panelNum % 2 === 1) {
-        // Figure 1 (Frantic Dagwood pose)
-        ctx.arc(140, 100, 24, 0, Math.PI * 2); // Head
-        ctx.fill();
-        ctx.fillRect(125, 124, 30, 55); // Torso
-        // Arms in air
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = isBW ? "#1e293b" : "#b45309";
+      if (pNum === 1 || pNum === 3) {
+        // Dagwood (1930 center part, bow tie, open collar)
+        ctx.fillStyle = isBW ? "#1e293b" : "#1e3a8a";
+        // Head & hair
         ctx.beginPath();
-        ctx.moveTo(125, 130); ctx.lineTo(95, 90);
-        ctx.moveTo(155, 130); ctx.lineTo(185, 90);
+        ctx.arc(160, 105, 26, 0, Math.PI * 2);
+        ctx.fill();
+        // Cowlick / hair horns
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = isBW ? "#1e293b" : "#1e3a8a";
+        ctx.beginPath();
+        ctx.moveTo(142, 85); ctx.lineTo(130, 70);
+        ctx.moveTo(178, 85); ctx.lineTo(190, 70);
         ctx.stroke();
-        // Sweat droplets
-        ctx.fillStyle = "#38bdf8";
+        // Face
+        ctx.fillStyle = "#fed7aa";
         ctx.beginPath();
-        ctx.arc(80, 80, 5, 0, Math.PI * 2);
-        ctx.arc(195, 80, 5, 0, Math.PI * 2);
+        ctx.arc(160, 110, 21, 0, Math.PI * 2);
         ctx.fill();
+        // Eyes (wide open, flustered)
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(152, 105, 3.5, 0, Math.PI * 2);
+        ctx.arc(168, 105, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Open mouth
+        ctx.beginPath();
+        ctx.ellipse(160, 120, 6, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Huge oversized 1930 buttoned suit
+        ctx.fillStyle = isBW ? "#334155" : "#0284c7";
+        ctx.fillRect(135, 132, 50, 73);
+        // Giant collar button
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(160, 138, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        if (pNum === 3) {
+          // Add Pop Bumstead blustering with cane
+          ctx.fillStyle = isBW ? "#0f172a" : "#7c2d12";
+          ctx.beginPath();
+          ctx.arc(280, 110, 28, 0, Math.PI * 2); // Bald head
+          ctx.fill();
+          ctx.fillStyle = "#fed7aa";
+          ctx.beginPath();
+          ctx.arc(280, 115, 24, 0, Math.PI * 2);
+          ctx.fill();
+          // White mustache & spectacles
+          ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
+          ctx.strokeRect(268, 108, 12, 8);
+          ctx.strokeRect(284, 108, 12, 8);
+          // Cane waving
+          ctx.lineWidth = 5; ctx.strokeStyle = "#78350f";
+          ctx.beginPath();
+          ctx.moveTo(250, 140); ctx.lineTo(210, 80); ctx.lineTo(200, 90);
+          ctx.stroke();
+        }
       } else {
-        // Figure 2 (Flapper Blondie pose)
-        ctx.fillStyle = isBW ? "#0f172a" : "#db2777";
+        // Blondie (1930 flapper curls, cloche silhouette)
+        ctx.fillStyle = isBW ? "#0f172a" : "#eab308";
+        // Blonde curls
         ctx.beginPath();
-        ctx.arc(200, 95, 20, 0, Math.PI * 2); // Head
+        ctx.arc(190, 100, 32, 0, Math.PI * 2);
         ctx.fill();
-        // Cloche hat
+        // Face profile
+        ctx.fillStyle = "#fed7aa";
         ctx.beginPath();
-        ctx.arc(200, 90, 24, Math.PI, 0);
+        ctx.arc(195, 105, 22, 0, Math.PI * 2);
         ctx.fill();
-        // Flapper dress
+        // Eyelashes & rosy cheek
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.moveTo(185, 115);
-        ctx.lineTo(215, 115);
-        ctx.lineTo(230, 180);
-        ctx.lineTo(170, 180);
+        ctx.moveTo(202, 100); ctx.lineTo(212, 97);
+        ctx.moveTo(202, 103); ctx.lineTo(213, 103);
+        ctx.stroke();
+        ctx.fillStyle = "#f43f5e";
+        ctx.beginPath();
+        ctx.arc(206, 113, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // 1930 Flapper Drop-waist dress
+        ctx.fillStyle = isBW ? "#1e293b" : "#db2777";
+        ctx.beginPath();
+        ctx.moveTo(175, 128); ctx.lineTo(215, 128); ctx.lineTo(235, 205); ctx.lineTo(155, 205);
         ctx.closePath();
         ctx.fill();
       }
 
-      // Visual Scene Description Watermark
+      // Panel visual caption line
       ctx.fillStyle = "#64748b";
       ctx.font = "italic 11px system-ui";
-      ctx.fillText(panelData.visual.slice(0, 48) + '...', 15, 235);
+      ctx.fillText(panelData.visual.slice(0, 52) + '...', 12, 260);
     }
 
     function redrawArtOnly() {
