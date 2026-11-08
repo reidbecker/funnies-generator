@@ -979,4 +979,171 @@ Return ONLY valid JSON matching this schema:
     }
 
     window.addEventListener('paste', e => {
-      const items = (e.clipboardData || e
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          processSelectedImageFile(item.getAsFile());
+        }
+      }
+    });
+
+    const dropZone = document.getElementById('imageDropZone');
+    if (dropZone) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, e => { e.preventDefault(); dropZone.style.background = '#eff6ff'; }, false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, e => { e.preventDefault(); dropZone.style.background = '#f8fafc'; }, false);
+      });
+      dropZone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        if (dt.files && dt.files[0]) processSelectedImageFile(dt.files[0]);
+      });
+    }
+
+    function processSelectedImageFile(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        associatedImageDataUrl = e.target.result;
+        document.getElementById('dropZoneText').style.display = 'none';
+        const img = document.getElementById('imagePreview');
+        img.src = associatedImageDataUrl;
+        img.style.display = 'block';
+
+        const saveBtn = document.getElementById('saveDocBtn');
+        saveBtn.disabled = false;
+        saveBtn.className = 'btn btn-success';
+        saveBtn.innerText = `💾 Save Document: ${activeSession.filename}`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // --- STEP 2: SAVE 2-PAGE DOCUMENT & RECORD TO LOG ---
+    function saveTwoPageDocumentToComputer() {
+      if (!associatedImageDataUrl || !activeSession) return;
+
+      const docHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${activeSession.fileNumber}</title>
+  <style>
+    @page { size: 8.5in 11in; margin: 0.8in; }
+    body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.4; color: #111; margin: 0; padding: 20px; }
+    .page-container { min-height: 9.5in; box-sizing: border-box; }
+    .page-break { page-break-after: always; break-after: page; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #666; padding: 8px 10px; font-size: 10pt; text-align: left; }
+    th { background-color: #f1f5f9; font-weight: bold; width: 22%; }
+    pre { background-color: #f8fafc; border: 1px solid #ccc; padding: 12px; font-size: 9.5pt; white-space: pre-wrap; font-family: Consolas, monospace; }
+    .img-box { text-align: center; margin-top: 25px; }
+    .img-box img { max-width: 100%; height: auto; border: 2px solid #000; }
+  </style>
+</head>
+<body>
+  <!-- PAGE 1: DOCKET METADATA & PROMPT SCRIPT -->
+  <div class="page-container">
+    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">COMIC STRIP PRODUCTION DOCKET</h2>
+    <table>
+      <tr><th>File Number:</th><td><strong>${activeSession.fileNumber}</strong></td><th>Date & Time:</th><td>${activeSession.timestamp}</td></tr>
+      <tr><th>Series:</th><td>${activeSession.series}</td><th>Layout:</th><td>${activeSession.panels}</td></tr>
+      <tr><th>Color Mode:</th><td>${activeSession.color}</td><th>Cast:</th><td>${activeSession.cast}</td></tr>
+      <tr><th>Tone:</th><td>${activeSession.tone}</td><th>Conflict:</th><td>${activeSession.conflict}</td></tr>
+      <tr><th>Ending Beat:</th><td colspan="3">${activeSession.ending}</td></tr>
+    </table>
+    <h3>Image Prompt Script:</h3>
+    <pre>${escapeHtml(activeSession.prompt)}</pre>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- PAGE 2: GRAPHIC IMAGE -->
+  <div class="page-container">
+    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">FINISHED COMIC ARTWORK</h2>
+    <p><strong>Docket Reference:</strong> ${activeSession.fileNumber} &nbsp;|&nbsp; <strong>Filename:</strong> ${activeSession.filename}</p>
+    <div class="img-box">
+      <img src="${associatedImageDataUrl}" alt="Comic Strip Image" />
+    </div>
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = activeSession.filename;
+      a.click();
+
+      recordToArchiveLog(activeSession);
+
+      document.getElementById('docCreationStatus').innerHTML = `✓ Saved to computer as: <strong>${activeSession.filename}</strong> and logged!`;
+    }
+
+    // --- FUNNIES GENERATOR LOG MANAGEMENT ---
+    function recordToArchiveLog(session) {
+      let log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+      log.unshift({
+        timestamp: session.timestamp,
+        filename: session.filename,
+        description: session.description
+      });
+      localStorage.setItem('funnies_archive_master_log', JSON.stringify(log));
+      refreshArchiveTable();
+    }
+
+    function refreshArchiveTable() {
+      try {
+        const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+        const tbody = document.querySelector('#masterArchiveTable tbody');
+        if (!tbody) return;
+
+        if (log.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No comic strips logged yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = '';
+        log.forEach(item => {
+          const row = `<tr>
+            <td>${item.timestamp}</td>
+            <td><strong>${item.filename}</strong></td>
+            <td>${item.description}</td>
+          </tr>`;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error("refreshArchiveTable error:", err);
+      }
+    }
+
+    function exportArchiveLogCSV() {
+      const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+      let csv = 'DateAndTime,FileName,ShortDescription\n';
+      log.forEach(r => {
+        csv += `"${r.timestamp}","${r.filename}","${r.description.replace(/"/g, '""')}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `funnies_generator_log_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    function clearArchiveLog() {
+      if (confirm('Clear all entries in the Funnies Generator Log?')) {
+        localStorage.removeItem('funnies_archive_master_log');
+        refreshArchiveTable();
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      syncAdminUI();
+      refreshArchiveTable();
+    });
+  </script>
+</body>
+</html>
