@@ -66,12 +66,9 @@
     .btn-primary { background-color: var(--primary); color: #fff; }
     .btn-primary:hover { background-color: var(--primary-hover); }
     .btn-success { background-color: var(--success); color: #fff; }
-    .btn-success:hover { background-color: #166534; }
     .btn-danger { background-color: var(--danger); color: #fff; }
-    .btn-danger:hover { background-color: #991b1b; }
     .btn-outline { background-color: transparent; border-color: #94a3b8; color: #f8fafc; }
     .btn-secondary { background-color: #475569; color: #fff; }
-    .btn-secondary:hover { background-color: #334155; }
     .btn-gemini { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; }
     .btn-sm { padding: 0.4rem 0.75rem; font-size: calc(0.85rem * var(--font-scale)); }
 
@@ -221,33 +218,6 @@
     }
 
     th { background-color: #f8fafc; font-weight: 600; }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .stat-card {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 1rem;
-      text-align: center;
-    }
-
-    .stat-label {
-      font-size: calc(0.85rem * var(--font-scale));
-      color: var(--text-muted);
-      margin-bottom: 0.25rem;
-    }
-
-    .stat-value {
-      font-size: calc(1.5rem * var(--font-scale));
-      font-weight: bold;
-      color: var(--text-main);
-    }
   </style>
 </head>
 <body>
@@ -272,7 +242,7 @@
     <!-- TAB 1: FUNNIES GENERATOR -->
     <div id="tab-generator" class="tab-content active">
       <div class="banner-info">
-        <strong>Direct Local Storage & Log Active:</strong> Generates unique file tracking numbers, freezes criteria, and exports formatted 2-page documents directly to your computer with automated ledger logging.
+        <strong>Dynamic Selection Engine Active:</strong> Scripts, character casts, narrative conflicts, and prompt scripts update immediately to reflect all chosen attributes.
       </div>
 
       <div class="card">
@@ -280,10 +250,10 @@
         <div class="form-group">
           <label>Select Comic Strip Series:</label>
           <div class="pill-group" id="seriesGroup">
-            <button class="pill-btn active" onclick="selectSinglePill('seriesGroup', this, 'Blondie & Dagwood')">Blondie & Dagwood (1930)</button>
-            <button class="pill-btn" onclick="selectSinglePill('seriesGroup', this, 'Popeye / Thimble Theatre')">Popeye / Thimble Theatre (1929)</button>
-            <button class="pill-btn" onclick="selectSinglePill('seriesGroup', this, 'Bringing Up Father')">Bringing Up Father (1913)</button>
-            <button class="pill-btn" onclick="selectSinglePill('seriesGroup', this, 'Krazy Kat')">Krazy Kat (1913)</button>
+            <button class="pill-btn active" onclick="selectSeries('Blondie & Dagwood', this)">Blondie & Dagwood (1930)</button>
+            <button class="pill-btn" onclick="selectSeries('Popeye / Thimble Theatre', this)">Popeye / Thimble Theatre (1929)</button>
+            <button class="pill-btn" onclick="selectSeries('Bringing Up Father', this)">Bringing Up Father (1913)</button>
+            <button class="pill-btn" onclick="selectSeries('Krazy Kat', this)">Krazy Kat (1913)</button>
           </div>
         </div>
 
@@ -305,13 +275,9 @@
         </div>
 
         <div class="form-group">
-          <label>Active Characters:</label>
+          <label>Active Characters in Selected Series:</label>
           <div class="pill-group" id="characterPills">
-            <button class="pill-btn active" onclick="togglePill(this)">✓ Dagwood Bumstead</button>
-            <button class="pill-btn active" onclick="togglePill(this)">✓ Blondie Boopadoop</button>
-            <button class="pill-btn" onclick="togglePill(this)">J. Bolling Bumstead (Pop)</button>
-            <button class="pill-btn" onclick="togglePill(this)">Daisy the Dog</button>
-            <button class="pill-btn" onclick="togglePill(this)">Irma</button>
+            <!-- Dynamically populated based on series -->
           </div>
         </div>
       </div>
@@ -332,8 +298,8 @@
             <label>Conflict Engine:</label>
             <div class="pill-group" id="conflictGroup">
               <button class="pill-btn active" onclick="selectSinglePill('conflictGroup', this, 'Domestic Routine')">Domestic Routine</button>
-              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Pop vs. Dagwood')">Pop's Disinheritance</button>
-              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Man vs. Chores')">Man vs. Chores</button>
+              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Authority Clash')">Authority Clash</button>
+              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Errand Gone Wrong')">Errand Gone Wrong</button>
             </div>
           </div>
 
@@ -354,7 +320,7 @@
         </div>
       </div>
 
-      <!-- PROMPT REVIEW & GEMINI BRIDGE CARD -->
+      <!-- PROMPT REVIEW CARD -->
       <div class="card" id="promptReviewCard" style="display: none;">
         <div class="card-title">
           <span>Active Session Docket</span>
@@ -381,7 +347,7 @@
         </div>
       </div>
 
-      <!-- RE-ASSOCIATION & LOCAL DOCUMENT EXPORTER -->
+      <!-- RE-ASSOCIATION & EXPORTER -->
       <div class="card" id="reassociationCard" style="display: none;">
         <h2 class="card-title">2. Associate Generated Image & Save 2-Page Document</h2>
         <p>After Gemini finishes creating your graphic, copy or save it, then paste or drop it below. The application will bind it to your file number, criteria, and prompt, log the creation, and save your two-page document to your computer.</p>
@@ -404,7 +370,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: FUNNIES GENERATOR LOG -->
+    <!-- TAB 2: LOG -->
     <div id="tab-log" class="tab-content">
       <div class="card">
         <div class="card-title">
@@ -432,13 +398,12 @@
       </div>
     </div>
 
-    <!-- TAB 3: ADMINISTRATOR & SETTINGS -->
+    <!-- TAB 3: SETTINGS -->
     <div id="tab-admin" class="tab-content">
-      <!-- 1. API KEY MANAGER -->
       <div class="card">
         <h2 class="card-title">Google AI Studio API Key Manager</h2>
         <div class="banner-info">
-          Your key is saved exclusively in this browser's private local vault (<code>localStorage</code>). It is securely retained so you do not need to re-enter it each time.
+          Your key is saved exclusively in this browser's private local vault (<code>localStorage</code>). It remains saved across sessions.
         </div>
         <div class="form-group">
           <label for="apiKeyInput">Gemini API Key (Google AI Studio):</label>
@@ -453,85 +418,17 @@
           </div>
         </div>
       </div>
-
-      <!-- 2. MONTHLY COST ACCUMULATOR & FINANCIAL LEDGER -->
-      <div class="card">
-        <div class="card-title">
-          <span>Monthly Cost Accumulator & Financial Ledger</span>
-          <button class="btn btn-secondary btn-sm" onclick="downloadCostLedgerCSV()">📥 Download Cost History Log (.csv)</button>
-        </div>
-        <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-label">Current Month Spend</div>
-            <div class="stat-value" id="costCurrentMonth" style="color: var(--primary);">$0.0000</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Lifetime Spend</div>
-            <div class="stat-value" id="costLifetime">$0.0000</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Avg Cost / Strip</div>
-            <div class="stat-value" id="costAvg">$0.0000</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Total Generations</div>
-            <div class="stat-value" id="totalGens">0</div>
-          </div>
-        </div>
-
-        <h3>Cost Audit History Log</h3>
-        <table id="costAuditTable">
-          <thead>
-            <tr>
-              <th>Date / Time</th>
-              <th>Series</th>
-              <th>Panels</th>
-              <th>Estimated Tokens</th>
-              <th>Cost ($ USD)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="margin-top: 1rem; text-align: right;">
-          <button class="btn btn-outline btn-sm" style="color: #b91c1c; border-color: #f87171;" onclick="resetCostLedger()">Reset Cost Ledger</button>
-        </div>
-      </div>
-
-      <!-- 3. SECURE STRIP SHARING PORTAL -->
-      <div class="card">
-        <h2 class="card-title">Secure Strip Sharing Portal</h2>
-        <div class="banner-info" style="border-left-color: #10b981; background-color: #f0fdf4;">
-          <strong>NotebookLM Non-Shareable Guardrail Active:</strong> When generating share packages, proprietary reference archives and local API credentials are automatically omitted. Only Sections B, C, D, and E (panel layouts, characteristics, and generated scripts) are bundled.
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-          <div class="form-group">
-            <label for="shareEmailInput">Recipient Email Address:</label>
-            <input type="email" id="shareEmailInput" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="colleague@example.com">
-          </div>
-          <div class="form-group">
-            <label for="sharePasswordInput">Access / Decryption Password:</label>
-            <input type="text" id="sharePasswordInput" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="e.g. Bumstead1930">
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="generateSharePackage()">Generate Secure Share Package</button>
-
-        <div id="shareOutputContainer" style="display: none; margin-top: 1.25rem;">
-          <label>Share Package Output & Transmission Preview:</label>
-          <div class="prompt-box" id="sharePackageText" style="background: #1e293b; color: #f8fafc; max-height: 220px;"></div>
-          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
-            <button class="btn btn-success btn-sm" onclick="copySharePackage()">Copy Share Package to Clipboard</button>
-            <button class="btn btn-secondary btn-sm" onclick="openDefaultEmailClient()">Open in Default Email Client</button>
-          </div>
-        </div>
-      </div>
     </div>
   </main>
 
   <script>
+    const SERIES_CASTS = {
+      'Blondie & Dagwood': ['Dagwood Bumstead', 'Blondie Boopadoop', 'J. Bolling Bumstead (Pop)', 'Daisy the Dog', 'Irma'],
+      'Popeye / Thimble Theatre': ['Popeye the Sailor', 'Olive Oyl', 'Castor Oyl', 'Ham Gravy', 'J. Wellington Wimpy'],
+      'Bringing Up Father': ['Jiggs', 'Maggie', 'Nora', 'Dinty Moore'],
+      'Krazy Kat': ['Krazy Kat', 'Ignatz Mouse', 'Officer Bull Pupp']
+    };
+
     let currentSettings = {
       series: 'Blondie & Dagwood',
       panels: '4-Panel',
@@ -554,25 +451,40 @@
     }
 
     function switchTab(tabId, clickedBtn) {
-      try {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-        
-        const targetPanel = document.getElementById('tab-' + tabId);
-        if (targetPanel) targetPanel.classList.add('active');
-        if (clickedBtn) clickedBtn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      
+      const targetPanel = document.getElementById('tab-' + tabId);
+      if (targetPanel) targetPanel.classList.add('active');
+      if (clickedBtn) clickedBtn.classList.add('active');
 
-        if (tabId === 'log') refreshArchiveTable();
-        if (tabId === 'admin') syncAdminUI();
-      } catch (err) {
-        console.error("Navigation error:", err);
-      }
+      if (tabId === 'log') refreshArchiveTable();
+      if (tabId === 'admin') syncAdminUI();
+    }
+
+    function selectSeries(seriesName, btn) {
+      document.getElementById('seriesGroup').querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSettings.series = seriesName;
+      populateCharacterPills(seriesName);
+    }
+
+    function populateCharacterPills(seriesName) {
+      const container = document.getElementById('characterPills');
+      container.innerHTML = '';
+      const cast = SERIES_CASTS[seriesName] || SERIES_CASTS['Blondie & Dagwood'];
+      cast.forEach((charName, index) => {
+        const pill = document.createElement('button');
+        pill.className = 'pill-btn' + (index < 2 ? ' active' : '');
+        pill.innerText = (index < 2 ? '✓ ' : '') + charName;
+        pill.onclick = () => togglePill(pill);
+        container.appendChild(pill);
+      });
     }
 
     function selectSinglePill(groupId, btn, value) {
       document.getElementById(groupId).querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      if (groupId === 'seriesGroup') currentSettings.series = value;
       if (groupId === 'panelCountGroup') currentSettings.panels = value;
       if (groupId === 'colorGroup') currentSettings.color = value;
       if (groupId === 'toneGroup') currentSettings.tone = value;
@@ -589,25 +501,17 @@
       }
     }
 
-    // --- API KEY STORAGE & SYNC ---
     function saveApiKey() {
-      try {
-        const input = document.getElementById('apiKeyInput');
-        const key = input.value.trim();
-        if (!key) {
-          alert('Please enter a valid API key.');
-          return;
-        }
-        localStorage.setItem('gemini_api_key', key);
-        syncAdminUI();
-        alert('✓ API Key successfully saved in private browser storage! It will remain saved for future sessions.');
-      } catch (e) {
-        console.error("Failed to save key:", e);
-      }
+      const input = document.getElementById('apiKeyInput');
+      const key = input.value.trim();
+      if (!key) { alert('Please enter a valid API key.'); return; }
+      localStorage.setItem('gemini_api_key', key);
+      syncAdminUI();
+      alert('✓ API Key saved!');
     }
 
     function removeApiKey() {
-      if (confirm('Are you sure you want to remove the saved API key from this browser?')) {
+      if (confirm('Remove the saved API key?')) {
         localStorage.removeItem('gemini_api_key');
         const input = document.getElementById('apiKeyInput');
         if (input) input.value = '';
@@ -616,179 +520,35 @@
     }
 
     function syncAdminUI() {
-      try {
-        const key = localStorage.getItem('gemini_api_key') || '';
-        const input = document.getElementById('apiKeyInput');
-        const badge = document.getElementById('keyStatusBadge');
-
-        if (input) input.value = key;
-        if (badge) {
-          if (key && key.length > 5) {
-            badge.innerHTML = `<span class="status-badge status-success">✓ Key Active & Saved in Browser Vault (ends in ...${key.slice(-4)})</span>`;
-          } else {
-            badge.innerHTML = `<span class="status-badge status-warning">No Key Configured (Using Offline Fallback Patterns)</span>`;
-          }
+      const key = localStorage.getItem('gemini_api_key') || '';
+      const input = document.getElementById('apiKeyInput');
+      const badge = document.getElementById('keyStatusBadge');
+      if (input) input.value = key;
+      if (badge) {
+        if (key && key.length > 5) {
+          badge.innerHTML = `<span class="status-badge status-success">✓ Key Active (ends in ...${key.slice(-4)})</span>`;
+        } else {
+          badge.innerHTML = `<span class="status-badge status-warning">No Key Configured (Using Dynamic Fallback Patterns)</span>`;
         }
-        refreshCostAuditUI();
-      } catch (err) {
-        console.error("syncAdminUI error:", err);
       }
     }
 
     function toggleKeyVisibility() {
       const input = document.getElementById('apiKeyInput');
-      if (input) {
-        input.type = input.type === 'password' ? 'text' : 'password';
-      }
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
     }
 
-    // --- COST ACCUMULATOR & AUDIT ---
-    function recordGenerationExpense(series, panels, inputTokens, outputTokens) {
-      try {
-        const cost = (inputTokens * 0.00000015) + (outputTokens * 0.0000006);
-        let history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
-        history.unshift({
-          timestamp: new Date().toLocaleString(),
-          series: series,
-          panels: panels,
-          tokens: inputTokens + outputTokens,
-          cost: cost
-        });
-        localStorage.setItem('funnies_cost_history', JSON.stringify(history));
-        refreshCostAuditUI();
-      } catch (e) {
-        console.error("Expense logging error:", e);
-      }
-    }
-
-    function refreshCostAuditUI() {
-      try {
-        const history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
-        let lifetime = 0;
-        let monthSpend = 0;
-        const currentMonth = new Date().getMonth();
-
-        history.forEach(item => {
-          const itemCost = Number(item.cost) || 0;
-          lifetime += itemCost;
-          if (item.timestamp && new Date(item.timestamp).getMonth() === currentMonth) {
-            monthSpend += itemCost;
-          }
-        });
-
-        const avg = history.length > 0 ? (lifetime / history.length) : 0;
-
-        const elMonth = document.getElementById('costCurrentMonth');
-        const elLife = document.getElementById('costLifetime');
-        const elAvg = document.getElementById('costAvg');
-        const elGens = document.getElementById('totalGens');
-
-        if (elMonth) elMonth.innerText = '$' + monthSpend.toFixed(5);
-        if (elLife) elLife.innerText = '$' + lifetime.toFixed(5);
-        if (elAvg) elAvg.innerText = '$' + avg.toFixed(5);
-        if (elGens) elGens.innerText = history.length;
-
-        const tbody = document.querySelector('#costAuditTable tbody');
-        if (!tbody) return;
-
-        if (history.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = '';
-        history.slice(0, 10).forEach(entry => {
-          const tokens = Number(entry.tokens) || 0;
-          const costVal = Number(entry.cost) || 0;
-          const row = `<tr>
-            <td>${entry.timestamp || '--'}</td>
-            <td>${entry.series || '--'}</td>
-            <td>${entry.panels || '--'}</td>
-            <td>${tokens.toLocaleString()}</td>
-            <td>$${costVal.toFixed(5)}</td>
-          </tr>`;
-          tbody.innerHTML += row;
-        });
-      } catch (err) {
-        console.error("refreshCostAuditUI error:", err);
-      }
-    }
-
-    function downloadCostLedgerCSV() {
-      const history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
-      let csv = 'Timestamp,Series,Panels,Tokens,Cost_USD\n';
-      history.forEach(r => {
-        csv += `"${r.timestamp}","${r.series}","${r.panels}",${r.tokens},${Number(r.cost).toFixed(6)}\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `comic_agent_cost_history_${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-    }
-
-    function resetCostLedger() {
-      if (confirm('Reset the Cost Audit Ledger to $0.00?')) {
-        localStorage.removeItem('funnies_cost_history');
-        refreshCostAuditUI();
-      }
-    }
-
-    // --- SECURE SHARING PORTAL ---
-    function generateSharePackage() {
-      if (!activeSession) {
-        alert('Please generate at least one comic strip first so there is active data to share.');
-        return;
-      }
-      const email = document.getElementById('shareEmailInput').value.trim() || 'colleague@example.com';
-      const password = document.getElementById('sharePasswordInput').value.trim() || 'DefaultPass1930';
-
-      let pkg = `====================================================================\n`;
-      pkg += `SECURE COMIC STRIP SHARING PACKAGE (SECTIONS B, C, D & E ONLY)\n`;
-      pkg += `====================================================================\n`;
-      pkg += `CONFIDENTIALITY NOTICE: NotebookLM reference archives and local API credentials are omitted by system guardrail.\n`;
-      pkg += `Recipient: ${email}\n`;
-      pkg += `Verification Phrase: ${password}\n`;
-      pkg += `Docket Ref: ${activeSession.fileNumber}\n`;
-      pkg += `Timestamp: ${activeSession.timestamp}\n\n`;
-      pkg += `[SECTION B: LAYOUT]: ${activeSession.panels}\n`;
-      pkg += `[SECTION C: ART FORMAT]: ${activeSession.color}\n`;
-      pkg += `[SECTION D: CHARACTERISTICS]:\n`;
-      pkg += `  - Tone: ${activeSession.tone}\n`;
-      pkg += `  - Conflict: ${activeSession.conflict}\n`;
-      pkg += `  - Ending: ${activeSession.ending}\n`;
-      pkg += `  - Active Cast: ${activeSession.cast}\n\n`;
-      pkg += `[SECTION E: GENERATED SCRIPT TRANSCRIPT]:\n`;
-      pkg += `${activeSession.prompt}\n`;
-      pkg += `====================================================================`;
-
-      document.getElementById('sharePackageText').innerText = pkg;
-      document.getElementById('shareOutputContainer').style.display = 'block';
-    }
-
-    function copySharePackage() {
-      const text = document.getElementById('sharePackageText').innerText;
-      navigator.clipboard.writeText(text);
-      alert('✓ Share package copied to clipboard!');
-    }
-
-    function openDefaultEmailClient() {
-      const email = document.getElementById('shareEmailInput').value.trim();
-      const subject = encodeURIComponent(`Funnies Comic Script Share: ${activeSession.fileNumber}`);
-      const body = encodeURIComponent(document.getElementById('sharePackageText').innerText);
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-    }
-
-    // --- STEP 1: INITIALIZE DOCKET & GENERATE PROMPT ---
+    // --- SCRIPT GENERATION ENGINE ---
     async function generatePromptPackage() {
       const btn = document.getElementById('generateBtn');
-      btn.innerText = '⏳ Initializing Docket & Prompt...';
+      btn.innerText = '⏳ Assembling Dynamic Script & Prompt...';
       btn.disabled = true;
 
       const activeChars = [];
       document.querySelectorAll('#characterPills .pill-btn.active').forEach(b => {
         activeChars.push(b.innerText.replace('✓ ', '').trim());
       });
+      if (activeChars.length === 0) activeChars.push(SERIES_CASTS[currentSettings.series][0]);
 
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const count = parseInt(localStorage.getItem('funnies_docket_counter') || '1');
@@ -804,15 +564,12 @@
       if (apiKey && apiKey.length > 10) {
         try {
           scriptData = await callGeminiAPI(apiKey, activeChars);
-          recordGenerationExpense(currentSettings.series, currentSettings.panels, 480, 720);
         } catch (e) {
-          console.warn('API script error, falling back to grounded template', e);
-          scriptData = buildGroundedTemplate(activeChars);
-          recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0);
+          console.warn('API call failed; using dynamic offline builder:', e);
+          scriptData = buildDynamicScript(activeChars);
         }
       } else {
-        scriptData = buildGroundedTemplate(activeChars);
-        recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0);
+        scriptData = buildDynamicScript(activeChars);
       }
 
       fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);
@@ -845,21 +602,23 @@
     }
 
     async function callGeminiAPI(apiKey, chars) {
-      const prompt = `Write a classic 1930 newspaper comic strip script for "${currentSettings.series}".
+      const prompt = `Write an authentic 1920s/1930s newspaper comic strip script for "${currentSettings.series}".
 Characters: ${chars.join(', ')}.
 Layout: ${currentSettings.panels}.
-Color: ${currentSettings.color}.
+Color Mode: ${currentSettings.color}.
 Tone: ${currentSettings.tone}.
-Conflict: ${currentSettings.conflict}.
-Ending: ${currentSettings.ending}.
-Return ONLY valid JSON matching this schema:
+Conflict Engine: ${currentSettings.conflict}.
+Ending Reaction Beat: ${currentSettings.ending}.
+Instructions:
+- Use authentic period slang, accurate character mannerisms, and dialect (e.g. for Popeye use nautical jargon, "I yam what I yam", pipe tooting; for Blondie use early 1930s flapper talk; for Jiggs use corned beef & cabbage/Maggie's rolling pin).
+- Return ONLY valid JSON matching this schema:
 {
   "title": "Comic Strip Title",
   "panels": [
     {
       "panelNum": 1,
-      "visual": "Precise visual action and character expressions",
-      "dialogue": "Character: Spoken line",
+      "visual": "Detailed visual action and character expressions",
+      "dialogue": "Character: Line of dialogue",
       "sfx": "BOLD SFX OR EMPTY"
     }
   ]
@@ -875,88 +634,195 @@ Return ONLY valid JSON matching this schema:
         })
       });
 
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const rawText = data.candidates[0].content.parts[0].text;
-      return JSON.parse(rawText);
+      return JSON.parse(data.candidates[0].content.parts[0].text);
+    }
+
+    // Dynamic offline builder that responds directly to all user selectors
+    function buildDynamicScript(chars) {
+      const series = currentSettings.series;
+      const isSix = currentSettings.panels === '6-Panel';
+      const c1 = chars[0] || 'Lead Character';
+      const c2 = chars[1] || (chars.length > 1 ? chars[1] : 'Supporting Character');
+      const conflict = currentSettings.conflict;
+      const tone = currentSettings.tone;
+      const ending = currentSettings.ending;
+
+      let panels = [];
+
+      if (series.includes('Popeye')) {
+        panels = [
+          {
+            panelNum: 1,
+            visual: `${c1} squints with his corncob pipe puffed up, confronting ${c2} over the ${conflict.toLowerCase()}.`,
+            dialogue: `${c1}: "Blow me down! What's the big idear about this ${conflict.toLowerCase()}?"`,
+            sfx: "TOOT! TOOT!"
+          },
+          {
+            panelNum: 2,
+            visual: `${c2} waves hands frantically in high dramatic fashion with knees knocking together, in a ${tone.toLowerCase()} manner.`,
+            dialogue: `${c2}: "Oh, heavens! You've ruined everything! Do something before disaster strikes!"`,
+            sfx: "EEK!"
+          },
+          {
+            panelNum: 3,
+            visual: `${c1} rolls up sleeves showing anchor tattoos and winds up an enormous windup punch.`,
+            dialogue: `${c1}: "That's all I can stands, cuz I can't stands no more!"`,
+            sfx: "CRACK!"
+          },
+          {
+            panelNum: 4,
+            visual: ending.includes('Fourth-Wall') 
+              ? `${c1} winks one eye directly at the reader, pipe smoking happily while the situation resolves.`
+              : `${c1} stands amidst flying debris as ${c2} faints backward.`,
+            dialogue: ending.includes('Fourth-Wall') 
+              ? `${c1}: "I yam what I yam, and that's all what I yam!"`
+              : `${c1}: "Well, that settles that argymint!"`,
+            sfx: "WHAMMO!"
+          }
+        ];
+        if (isSix) {
+          panels.push(
+            { panelNum: 5, visual: `${c2} recovers and inspects the aftermath with hands on hips.`, dialogue: `${c2}: "Well, it's about time someone took charge!"`, sfx: "" },
+            { panelNum: 6, visual: `${c1} leans against a dock piling chuckling contentedly.`, dialogue: `${c1}: "Good deeds is their own reward, says I!"`, sfx: "CHUCKLE!" }
+          );
+        }
+      } else if (series.includes('Bringing Up Father')) {
+        panels = [
+          {
+            panelNum: 1,
+            visual: `${c1} sneaks toward the front door in his top hat trying to escape for corned beef and cabbage.`,
+            dialogue: `${c1}: "If I can slip down to Dinty Moore's, the boys are waitin' with a hot hand of cards!"`,
+            sfx: "TIP-TOE"
+          },
+          {
+            panelNum: 2,
+            visual: `${c2} looms in the doorway with arms crossed and rolling pin in hand, reacting with ${tone.toLowerCase()} indignation.`,
+            dialogue: `${c2}: "And where do you think you're going, you low-down roustabout? Opera night is starting!"`,
+            sfx: "AHEM!"
+          },
+          {
+            panelNum: 3,
+            visual: `A vase sails through the air as ${c1} ducks under a hall table.`,
+            dialogue: `${c1}: "Have a heart, Maggie! A man needs supper, not high society singing!"`,
+            sfx: "CRASH!"
+          },
+          {
+            panelNum: 4,
+            visual: `${c1} trapped in full tuxedo and white tie, looking straight at the audience with ${ending.toLowerCase()}.`,
+            dialogue: `${c1}: "A millionaire in a palace, and I can't even get a plate of corned beef!"`,
+            sfx: "SIGH!"
+          }
+        ];
+        if (isSix) {
+          panels.push(
+            { panelNum: 5, visual: `${c2} marches ${c1} into the parlor by his ear.`, dialogue: `${c2}: "Sit there and enjoy this culture if it kills you!"`, sfx: "TWIST!" },
+            { panelNum: 6, visual: `${c1} fast asleep snoring loudly in his chair.`, dialogue: `${c1}: "ZZZZ... pass the cabbage, Dinty..."`, sfx: "SNORE!" }
+          );
+        }
+      } else if (series.includes('Krazy Kat')) {
+        panels = [
+          {
+            panelNum: 1,
+            visual: `${c1} dances across the surreal Coconino County desert admiring the strange landscape.`,
+            dialogue: `${c1}: "Lookit them mesa mountains! Ain't nature just a poetical willy-nilly?"`,
+            sfx: "STRUM"
+          },
+          {
+            panelNum: 2,
+            visual: `${c2} lurks behind a giant cactus winding up with a heavy brick in hand.`,
+            dialogue: `${c2}: "I will now heave this projectile of affection!"`,
+            sfx: "CREAK"
+          },
+          {
+            panelNum: 3,
+            visual: `The brick flies through the air in a perfect arc above the desert sands.`,
+            dialogue: `Officer Pupp: "Hold, vandal of the peace! Not on my watch!"`,
+            sfx: "SWOOSH!"
+          },
+          {
+            panelNum: 4,
+            visual: `${c1} struck squarely on the head with little hearts dancing above, swooning with joy.`,
+            dialogue: `${c1}: "Ah, sweet lil Ignatz... he sends his warmest tokens of regard!"`,
+            sfx: "POW!"
+          }
+        ];
+        if (isSix) {
+          panels.push(
+            { panelNum: 5, visual: `Officer Pupp hauls off ${c2} into the county jailhouse.`, dialogue: `Pupp: "To the hoosegow with you, miscreant!"`, sfx: "CLANG!" },
+            { panelNum: 6, visual: `${c1} sitting outside the jail bars smiling serenely.`, dialogue: `${c1}: "Faithful heart, true love knows no locks nor bars."`, sfx: "" }
+          );
+        }
+      } else {
+        // Blondie & Dagwood
+        panels = [
+          {
+            panelNum: 1,
+            visual: `${c1} pacing frantically due to the ${conflict.toLowerCase()}, tearing hair out.`,
+            dialogue: `${c1}: "Great Scott! This ${conflict.toLowerCase()} is going to ruin me before lunch!"`,
+            sfx: "RUSTLE!"
+          },
+          {
+            panelNum: 2,
+            visual: `${c2} posing casually in flapper attire, laughing off the tension in a ${tone.toLowerCase()} spirit.`,
+            dialogue: `${c2}: "Don't be a wet blanket! Life is too short to worry over a silly ${conflict.toLowerCase()}."`,
+            sfx: ""
+          },
+          {
+            panelNum: 3,
+            visual: `Chaos erupts across the living room with lamps wobbling and papers scattering.`,
+            dialogue: `${c1}: "Everything's turning upside down!"`,
+            sfx: "WHAM!"
+          },
+          {
+            panelNum: 4,
+            visual: ending.includes('Fourth-Wall')
+              ? `${c1} looks directly out of the frame at the reader with hands raised.`
+              : `${c1} collapses onto the sofa exhausted.`,
+            dialogue: ending.includes('Fourth-Wall')
+              ? `${c1}: "Does anyone else have days like this, or is it just me?"`
+              : `${c1}: "I give up! Bring on tomorrow!"`,
+            sfx: "SIGH!"
+          }
+        ];
+        if (isSix) {
+          panels.push(
+            { panelNum: 5, visual: `${c2} offers an ice cream soda at the table.`, dialogue: `${c2}: "Cheer up, big boy! A soda makes everything right."`, sfx: "" },
+            { panelNum: 6, visual: `${c1} handed an enormous soda bill while Daisy the dog peeks out.`, dialogue: `${c1}: "And somehow I'm still paying for it!"`, sfx: "GULP!" }
+          );
+        }
+      }
+
+      return {
+        title: `${series.toUpperCase()} — DAILY FUNNIES`,
+        panels: panels
+      };
     }
 
     function buildFormattedGeminiPrompt(data, chars) {
       const panelCount = currentSettings.panels;
       const artStyle = currentSettings.color === 'B&W'
-        ? "Authentic 1930 vintage newspaper comic strip, hand-drawn black ink line art with classic newspaper cross-hatching, high-contrast black and white only, newsprint texture, clean thick comic panel borders, Chic Young Blondie and Dagwood style."
-        : "Authentic 1930 vintage Sunday funny comic strip, four-color newsprint palette with classic Ben-Day dot shading, vintage watercolor wash, classic line art, Chic Young style.";
+        ? "Authentic 1920s/1930s vintage newspaper comic strip line art, hand-drawn ink cross-hatching, high-contrast black and white only, newsprint texture, clean thick borders."
+        : "Authentic 1920s/1930s vintage Sunday funny comic strip, four-color newsprint palette with classic Ben-Day dot shading, vintage watercolor wash.";
 
-      let prompt = `Create a complete ${panelCount} horizontal comic strip in the style of Chic Young's classic 1930 newspaper funnies "${currentSettings.series}".\n\n`;
+      let prompt = `Create a complete ${panelCount} horizontal comic strip for the classic newspaper funnies series "${currentSettings.series}".\n\n`;
       prompt += `Art Style: ${artStyle}\n`;
-      prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp black borders and dialogue speech bubbles.\n`;
-      prompt += `Featured Characters: ${chars.join(', ')}\n\n`;
-      prompt += `PANEL DESCRIPTIONS:\n`;
+      prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp borders and clean dialogue speech bubbles.\n`;
+      prompt += `Featured Characters: ${chars.join(', ')}\n`;
+      prompt += `Narrative Tone: ${currentSettings.tone} | Conflict: ${currentSettings.conflict} | Ending Beat: ${currentSettings.ending}\n\n`;
+      prompt += `PANEL BREAKDOWN:\n`;
 
       data.panels.forEach(p => {
         prompt += `Panel ${p.panelNum}:\n`;
         prompt += `- Visual Scene: ${p.visual}\n`;
         prompt += `- Speech Bubble: ${p.dialogue}\n`;
-        if (p.sfx) prompt += `- Sound Effect: ${p.sfx} in bold red comic text\n`;
+        if (p.sfx) prompt += `- Sound Effect: ${p.sfx}\n`;
         prompt += `\n`;
       });
 
-      prompt += `Render the comic strip as a single vintage newspaper image showing all panels clearly with readable dialogue.`;
+      prompt += `Render the comic strip as a single clear newspaper image showing all panels sequentially with readable text.`;
       return prompt;
-    }
-
-    function buildGroundedTemplate(chars) {
-      const isSix = currentSettings.panels === '6-Panel';
-      const c1 = chars[0] || 'Dagwood';
-      const c2 = chars[1] || 'Blondie';
-
-      const panels = [
-        {
-          panelNum: 1,
-          visual: `${c1} in front of his wardrobe, frantically pulling out hats and ties, looking panicked with wide eyes and disheveled hair.`,
-          dialogue: `${c1}: "Great Scott! Where is my lucky necktie? Pop will fire me if I am five seconds late to the office!"`,
-          sfx: "RUSTLE! CLATTER!"
-        },
-        {
-          panelNum: 2,
-          visual: `${c2} in authentic 1930 flapper attire by the radio, striking an exuberant Charleston pose with hands on hips.`,
-          dialogue: `${c2}: "Cheer up, Daggy! When I am around, nobody stays blue—I feel so boop-boop-a-doop!"`,
-          sfx: "DING DONG!"
-        },
-        {
-          panelNum: 3,
-          visual: `Pop Bumstead bursts through the doorway brandishing his cane, face red with rage while ${c1} sweats nervously.`,
-          dialogue: `Pop: "Bumstead! Still gallivanting with chorus flappers? You are disinherited without a single dime!"`,
-          sfx: "WHAM!"
-        },
-        {
-          panelNum: 4,
-          visual: `${c2} playfully pats Pop on his bald head; Pop looks astonished and disarmed while ${c1} raises eyebrows to the reader.`,
-          dialogue: `${c2}: "Now now, Pops! Play your cards right and you can buy us both a tall ice cream soda!"`,
-          sfx: "PAT! PAT!"
-        }
-      ];
-
-      if (isSix) {
-        panels.push(
-          {
-            panelNum: 5,
-            visual: `Pop smiling sheepishly, reaching into his pocket while ${c1} collapses onto the armchair in relief.`,
-            dialogue: `Pop: "Well... five cents at the corner soda parlor never broke a railroad dynasty."`,
-            sfx: "CHUCKLE"
-          },
-          {
-            panelNum: 6,
-            visual: `All three at the soda fountain, ${c1} staring wide-eyed at an enormous six-scoop sundae bill.`,
-            dialogue: `${c1}: "And somehow Pop stuck me with the whole tab!"`,
-            sfx: "GULP!"
-          }
-        );
-      }
-
-      return {
-        title: `${currentSettings.series.toUpperCase()} — DAILY FUNNIES`,
-        panels: panels
-      };
     }
 
     function copyGeminiPrompt() {
@@ -968,7 +834,6 @@ Return ONLY valid JSON matching this schema:
       window.open('https://gemini.google.com/app', '_blank');
     }
 
-    // --- RE-ASSOCIATION: DRAG / DROP / PASTE ---
     function triggerFileInput() {
       const input = document.getElementById('manualImageFileInput');
       if (input) input.click();
@@ -1019,7 +884,6 @@ Return ONLY valid JSON matching this schema:
       reader.readAsDataURL(file);
     }
 
-    // --- STEP 2: SAVE 2-PAGE DOCUMENT & RECORD TO LOG ---
     function saveTwoPageDocumentToComputer() {
       if (!associatedImageDataUrl || !activeSession) return;
 
@@ -1042,7 +906,6 @@ Return ONLY valid JSON matching this schema:
   </style>
 </head>
 <body>
-  <!-- PAGE 1: DOCKET METADATA & PROMPT SCRIPT -->
   <div class="page-container">
     <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">COMIC STRIP PRODUCTION DOCKET</h2>
     <table>
@@ -1058,7 +921,6 @@ Return ONLY valid JSON matching this schema:
 
   <div class="page-break"></div>
 
-  <!-- PAGE 2: GRAPHIC IMAGE -->
   <div class="page-container">
     <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">FINISHED COMIC ARTWORK</h2>
     <p><strong>Docket Reference:</strong> ${activeSession.fileNumber} &nbsp;|&nbsp; <strong>Filename:</strong> ${activeSession.filename}</p>
@@ -1076,11 +938,9 @@ Return ONLY valid JSON matching this schema:
       a.click();
 
       recordToArchiveLog(activeSession);
-
-      document.getElementById('docCreationStatus').innerHTML = `✓ Saved to computer as: <strong>${activeSession.filename}</strong> and logged!`;
+      document.getElementById('docCreationStatus').innerHTML = `✓ Saved as: <strong>${activeSession.filename}</strong> and logged!`;
     }
 
-    // --- FUNNIES GENERATOR LOG MANAGEMENT ---
     function recordToArchiveLog(session) {
       let log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
       log.unshift({
@@ -1093,27 +953,23 @@ Return ONLY valid JSON matching this schema:
     }
 
     function refreshArchiveTable() {
-      try {
-        const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-        const tbody = document.querySelector('#masterArchiveTable tbody');
-        if (!tbody) return;
+      const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+      const tbody = document.querySelector('#masterArchiveTable tbody');
+      if (!tbody) return;
 
-        if (log.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No comic strips logged yet.</td></tr>`;
-          return;
-        }
-        tbody.innerHTML = '';
-        log.forEach(item => {
-          const row = `<tr>
-            <td>${item.timestamp}</td>
-            <td><strong>${item.filename}</strong></td>
-            <td>${item.description}</td>
-          </tr>`;
-          tbody.innerHTML += row;
-        });
-      } catch (err) {
-        console.error("refreshArchiveTable error:", err);
+      if (log.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No comic strips logged yet.</td></tr>`;
+        return;
       }
+      tbody.innerHTML = '';
+      log.forEach(item => {
+        const row = `<tr>
+          <td>${item.timestamp}</td>
+          <td><strong>${item.filename}</strong></td>
+          <td>${item.description}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
     }
 
     function exportArchiveLogCSV() {
@@ -1141,6 +997,7 @@ Return ONLY valid JSON matching this schema:
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      populateCharacterPills(currentSettings.series);
       syncAdminUI();
       refreshArchiveTable();
     });
