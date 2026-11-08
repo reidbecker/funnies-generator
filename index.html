@@ -1127,7 +1127,7 @@ Instructions:
       prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp borders and clean dialogue speech bubbles.\n`;
       prompt += `Featured Characters: ${chars.join(', ')}\n`;
       prompt += `Period Era: ${currentSettings.period}\n`;
-      prompt += `Narrative Tone: ${currentSettings.tone} | Conflict: ${currentSettings.conflict} | Ending Beat:${currentSettings.ending}\n\n`;
+      prompt += `Narrative Tone: ${currentSettings.tone} | Conflict: ${currentSettings.conflict} | Ending Beat: ${currentSettings.ending}\n\n`;
       prompt += `PANEL BREAKDOWN:\n`;
 
       data.panels.forEach(p => {
@@ -1221,4 +1221,57 @@ Instructions:
     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
     th, td { border: 1px solid #666; padding: 8px 10px; font-size: 10pt; text-align: left; }
     th { background-color: #f1f5f9; font-weight: bold; width: 22%; }
-    pre { background-color: #f8fafc; border: 1px solid #ccc; padding: 12px; font-size: 9.5pt; white-space: pre-wrap; font-
+    pre { background-color: #f8fafc; border: 1px solid #ccc; padding: 12px; font-size: 9.5pt; white-space: pre-wrap; font-family: Consolas, monospace; }
+    .img-box { text-align: center; margin-top: 25px; }
+    .img-box img { max-width: 100%; height: auto; border: 2px solid #000; }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">COMIC STRIP PRODUCTION DOCKET</h2>
+    <table>
+      <tr><th>File Number:</th><td><strong>${activeSession.fileNumber}</strong></td><th>Date & Time:</th><td>${activeSession.timestamp}</td></tr>
+      <tr><th>Series:</th><td>${activeSession.series}</td><th>Layout:</th><td>${activeSession.panels}</td></tr>
+      <tr><th>Period:</th><td><strong>${activeSession.period}</strong></td><th>Color Mode:</th><td>${activeSession.color}</td></tr>
+      <tr><th>Cast:</th><td>${activeSession.cast}</td><th>Tone:</th><td>${activeSession.tone}</td></tr>
+      <tr><th>Conflict:</th><td>${activeSession.conflict}</td><th>Ending Beat:</th><td>${activeSession.ending}</td></tr>
+    </table>
+    <h3>Image Prompt Script:</h3>
+    <pre>${escapeHtml(activeSession.prompt)}</pre>
+  </div>
+
+  <div class="page-break"></div>
+
+  <div class="page-container">
+    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">FINISHED COMIC ARTWORK</h2>
+    <p><strong>Docket Reference:</strong> ${activeSession.fileNumber} &nbsp;|&nbsp; <strong>Filename:</strong> ${activeSession.filename}</p>
+    <div class="img-box">
+      <img src="${associatedImageDataUrl}" alt="Comic Strip Image" />
+    </div>
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = activeSession.filename;
+      a.click();
+
+      const statusEl = document.getElementById('docCreationStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `✓ Saved as: <strong>${activeSession.filename}</strong>!`;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateCharacterPills(currentSettings.series);
+      syncAdminUI();
+    });
+  </script>
+</body>
+</html>
