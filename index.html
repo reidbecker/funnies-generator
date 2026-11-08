@@ -70,6 +70,7 @@
     .btn-danger:hover { background-color: #991b1b; }
     .btn-outline { background-color: transparent; border-color: #94a3b8; color: #f8fafc; }
     .btn-secondary { background-color: #475569; color: #fff; }
+    .btn-secondary:hover { background-color: #334155; }
     .btn-gemini { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; }
     .btn-sm { padding: 0.4rem 0.75rem; font-size: calc(0.85rem * var(--font-scale)); }
 
@@ -255,15 +256,13 @@
       <h1>Funnies Generator & Archive Agent</h1>
     </div>
     <div class="header-actions">
-      <button class="btn btn-outline" onclick="toggleLargeText()">Aa Large Text</button>
-      <a href="https://gemini.google.com/notebook/345981ec-f63d-4754-9eef-b705464ed5b0" target="_blank" class="btn btn-outline">📜 Funnies Reference Engine ↗</a>
+      <button class="btn btn-outline" type="button" onclick="toggleLargeText()">Aa Large Text</button>
     </div>
   </header>
 
   <nav>
-    <button class="nav-tab active" id="nav-btn-generator" onclick="switchTab('generator', this)">🎨 Funnies Generator</button>
-    <button class="nav-tab" id="nav-btn-log" onclick="switchTab('log', this)">📂 Funnies Generator Log</button>
-    <button class="nav-tab" id="nav-btn-admin" onclick="switchTab('admin', this)">⚙️ Administrator & Settings</button>
+    <button class="nav-tab active" id="nav-btn-generator" type="button" onclick="switchTab('generator', this)">🎨 Funnies Generator</button>
+    <button class="nav-tab" id="nav-btn-admin" type="button" onclick="switchTab('admin', this)">⚙️ Administrator & Settings</button>
   </nav>
 
   <main>
@@ -278,10 +277,10 @@
         <div class="form-group">
           <label>Select Comic Strip Series:</label>
           <div class="pill-group" id="seriesGroup">
-            <button class="pill-btn active" onclick="selectSeries('Blondie & Dagwood', this)">Blondie & Dagwood (1930)</button>
-            <button class="pill-btn" onclick="selectSeries('Popeye / Thimble Theatre', this)">Popeye / Thimble Theatre (1929)</button>
-            <button class="pill-btn" onclick="selectSeries('Bringing Up Father', this)">Bringing Up Father (1913)</button>
-            <button class="pill-btn" onclick="selectSeries('Krazy Kat', this)">Krazy Kat (1913)</button>
+            <button class="pill-btn active" type="button" onclick="selectSeries('Blondie & Dagwood', this)">Blondie & Dagwood (1930)</button>
+            <button class="pill-btn" type="button" onclick="selectSeries('Popeye / Thimble Theatre', this)">Popeye / Thimble Theatre (1929)</button>
+            <button class="pill-btn" type="button" onclick="selectSeries('Bringing Up Father', this)">Bringing Up Father (1913)</button>
+            <button class="pill-btn" type="button" onclick="selectSeries('Krazy Kat', this)">Krazy Kat (1913)</button>
           </div>
         </div>
 
@@ -289,15 +288,15 @@
           <div class="form-group">
             <label>Panel Count:</label>
             <div class="pill-group" id="panelCountGroup">
-              <button class="pill-btn active" onclick="selectSinglePill('panelCountGroup', this, '4-Panel')">4-Panel Daily</button>
-              <button class="pill-btn" onclick="selectSinglePill('panelCountGroup', this, '6-Panel')">6-Panel Sunday</button>
+              <button class="pill-btn active" type="button" onclick="selectSinglePill('panelCountGroup', this, '4-Panel')">4-Panel Daily</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('panelCountGroup', this, '6-Panel')">6-Panel Sunday</button>
             </div>
           </div>
           <div class="form-group">
             <label>Art Style & Color:</label>
             <div class="pill-group" id="colorGroup">
-              <button class="pill-btn active" onclick="selectSinglePill('colorGroup', this, 'B&W')">Classic B&W Line Art</button>
-              <button class="pill-btn" onclick="selectSinglePill('colorGroup', this, 'Color')">Vintage Sunday Newsprint Color</button>
+              <button class="pill-btn active" type="button" onclick="selectSinglePill('colorGroup', this, 'B&W')">Classic B&W Line Art</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('colorGroup', this, 'Color')">Vintage Sunday Newsprint Color</button>
             </div>
           </div>
         </div>
@@ -316,33 +315,33 @@
           <div>
             <label>Overall Tone:</label>
             <div class="pill-group" id="toneGroup">
-              <button class="pill-btn active" onclick="selectSinglePill('toneGroup', this, 'Domestic / Warm')">Domestic / Warm</button>
-              <button class="pill-btn" onclick="selectSinglePill('toneGroup', this, 'Slapstick / Chaos')">Slapstick / Chaos</button>
-              <button class="pill-btn" onclick="selectSinglePill('toneGroup', this, 'Satirical')">Satirical / Wry</button>
+              <button class="pill-btn active" type="button" onclick="selectSinglePill('toneGroup', this, 'Domestic / Warm')">Domestic / Warm</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('toneGroup', this, 'Slapstick / Chaos')">Slapstick / Chaos</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('toneGroup', this, 'Satirical')">Satirical / Wry</button>
             </div>
           </div>
 
           <div>
             <label>Conflict Engine:</label>
             <div class="pill-group" id="conflictGroup">
-              <button class="pill-btn active" onclick="selectSinglePill('conflictGroup', this, 'Domestic Routine')">Domestic Routine</button>
-              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Authority Clash')">Authority Clash</button>
-              <button class="pill-btn" onclick="selectSinglePill('conflictGroup', this, 'Errand Gone Wrong')">Errand Gone Wrong</button>
+              <button class="pill-btn active" type="button" onclick="selectSinglePill('conflictGroup', this, 'Domestic Routine')">Domestic Routine</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('conflictGroup', this, 'Authority Clash')">Authority Clash</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('conflictGroup', this, 'Errand Gone Wrong')">Errand Gone Wrong</button>
             </div>
           </div>
 
           <div>
             <label>Ending Beat:</label>
             <div class="pill-group" id="endingGroup">
-              <button class="pill-btn active" onclick="selectSinglePill('endingGroup', this, 'Fourth-Wall Break')">Fourth-Wall Break</button>
-              <button class="pill-btn" onclick="selectSinglePill('endingGroup', this, 'Defeated Resignation')">Defeated Resignation</button>
-              <button class="pill-btn" onclick="selectSinglePill('endingGroup', this, 'Cloud of Dust Exit')">Cloud of Dust Exit</button>
+              <button class="pill-btn active" type="button" onclick="selectSinglePill('endingGroup', this, 'Fourth-Wall Break')">Fourth-Wall Break</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('endingGroup', this, 'Defeated Resignation')">Defeated Resignation</button>
+              <button class="pill-btn" type="button" onclick="selectSinglePill('endingGroup', this, 'Cloud of Dust Exit')">Cloud of Dust Exit</button>
             </div>
           </div>
         </div>
 
         <div style="margin-top: 1.5rem; text-align: center;">
-          <button class="btn btn-primary" style="padding: 0.9rem 2rem; font-size: calc(1.1rem * var(--font-scale));" id="generateBtn" onclick="generatePromptPackage()">
+          <button class="btn btn-primary" style="padding: 0.9rem 2rem; font-size: calc(1.1rem * var(--font-scale));" id="generateBtn" type="button" onclick="generatePromptPackage()">
             ✨ 1. Generate Prompt & Initialize Docket
           </button>
         </div>
@@ -353,8 +352,8 @@
         <div class="card-title">
           <span>Active Session Docket</span>
           <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-success btn-sm" onclick="copyGeminiPrompt()">📋 Copy Prompt</button>
-            <button class="btn btn-gemini btn-sm" onclick="openGeminiChat()">🚀 Open Gemini ↗</button>
+            <button class="btn btn-success btn-sm" type="button" onclick="copyGeminiPrompt()">📋 Copy Prompt</button>
+            <button class="btn btn-gemini btn-sm" type="button" onclick="openGeminiChat()">🚀 Open Gemini ↗</button>
           </div>
         </div>
 
@@ -366,10 +365,10 @@
         <div class="prompt-box" id="geminiPromptText"></div>
 
         <div style="margin-top: 1.25rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-          <button class="btn btn-success" style="padding: 0.85rem 1.6rem;" onclick="copyGeminiPrompt()">
+          <button class="btn btn-success" style="padding: 0.85rem 1.6rem;" type="button" onclick="copyGeminiPrompt()">
             📋 Copy Image Prompt to Clipboard
           </button>
-          <button class="btn btn-gemini" style="padding: 0.85rem 1.8rem;" onclick="openGeminiChat()">
+          <button class="btn btn-gemini" style="padding: 0.85rem 1.8rem;" type="button" onclick="openGeminiChat()">
             🚀 Open Gemini in New Tab ↗
           </button>
         </div>
@@ -378,7 +377,7 @@
       <!-- RE-ASSOCIATION & EXPORTER -->
       <div class="card" id="reassociationCard" style="display: none;">
         <h2 class="card-title">2. Associate Generated Image & Save 2-Page Document</h2>
-        <p>After Gemini finishes creating your graphic, copy or save it, then paste or drop it below. The application will bind it to your file number, criteria, and prompt, log the creation, and save your two-page document to your computer.</p>
+        <p>After Gemini finishes creating your graphic, copy or save it, then paste or drop it below. The application will bind it to your file number, criteria, and prompt, and save your two-page document to your computer.</p>
         
         <div class="drop-zone" id="imageDropZone" onclick="triggerFileInput()">
           <div id="dropZoneText">
@@ -390,7 +389,7 @@
         <input type="file" id="manualImageFileInput" accept="image/*" style="display: none;" onchange="handleImageFileSelected(this)">
 
         <div style="margin-top: 1.25rem; text-align: center;">
-          <button class="btn btn-primary" style="padding: 0.9rem 2rem;" id="saveDocBtn" onclick="saveTwoPageDocumentToComputer()" disabled>
+          <button class="btn btn-primary" style="padding: 0.9rem 2rem;" id="saveDocBtn" type="button" onclick="saveTwoPageDocumentToComputer()" disabled>
             💾 Save 2-Page Document to Computer (.html)
           </button>
           <div id="docCreationStatus" style="margin-top: 0.75rem; font-weight: bold; color: var(--success);"></div>
@@ -398,35 +397,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: LOG -->
-    <div id="tab-log" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <span>Funnies Generator Log</span>
-          <button class="btn btn-secondary btn-sm" onclick="exportArchiveLogCSV()">📥 Export Log (.csv)</button>
-        </div>
-        <p>Historical audit ledger of all generated comic strips with dates, filenames, and short descriptions.</p>
-        <table id="masterArchiveTable">
-          <thead>
-            <tr>
-              <th style="width: 22%;">Date & Time</th>
-              <th style="width: 33%;">File Name</th>
-              <th style="width: 45%;">Short Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colspan="3" style="text-align: center; color: var(--text-muted);">No comic strips logged yet.</td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="margin-top: 1rem; text-align: right;">
-          <button class="btn btn-outline btn-sm" style="color: #b91c1c; border-color: #f87171;" onclick="clearArchiveLog()">Reset Log</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 3: ADMINISTRATOR & SETTINGS -->
+    <!-- TAB 2: ADMINISTRATOR & SETTINGS -->
     <div id="tab-admin" class="tab-content">
       <!-- 1. API KEY MANAGER -->
       <div class="card">
@@ -499,7 +470,7 @@
       <div class="card">
         <h2 class="card-title">Secure Strip Sharing Portal</h2>
         <div class="banner-info" style="border-left-color: #10b981; background-color: #f0fdf4;">
-          <strong>NotebookLM Non-Shareable Guardrail Active:</strong> When generating share packages, proprietary reference archives and local API credentials are automatically omitted. Only Sections B, C, D, and E (panel layouts, characteristics, and generated scripts) are bundled.
+          <strong>Security Guardrail Active:</strong> When generating share packages, local API credentials and browser session states are automatically omitted. Only Sections B, C, D, and E (panel layouts, characteristics, and generated scripts) are bundled.
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
           <div class="form-group">
@@ -559,9 +530,8 @@
       }
     } catch (e) {}
 
-    // Direct tab switcher with explicit DOM queries so it never fails on parameter mismatches
     function switchTab(tabId, clickedBtn) {
-      const tabs = ['generator', 'log', 'admin'];
+      const tabs = ['generator', 'admin'];
       tabs.forEach(t => {
         const panel = document.getElementById('tab-' + t);
         const btn = document.getElementById('nav-btn-' + t);
@@ -574,9 +544,6 @@
       if (activePanel) activePanel.classList.add('active');
       if (activeBtn) activeBtn.classList.add('active');
 
-      if (tabId === 'log') {
-        setTimeout(refreshArchiveTable, 10);
-      }
       if (tabId === 'admin') {
         setTimeout(syncAdminUI, 10);
       }
@@ -623,7 +590,6 @@
       }
     }
 
-    // --- API KEY STORAGE & SYNC ---
     function saveApiKey() {
       const input = document.getElementById('apiKeyInput');
       if (!input) return;
@@ -678,7 +644,6 @@
       }
     }
 
-    // --- COST ACCUMULATOR & AUDIT ---
     function recordGenerationExpense(series, panels, inputTokens, outputTokens) {
       try {
         const cost = (inputTokens * 0.00000015) + (outputTokens * 0.0000006);
@@ -778,7 +743,6 @@
       }
     }
 
-    // --- SECURE SHARING PORTAL ---
     function generateSharePackage() {
       if (!activeSession) {
         alert('Please generate at least one comic strip first so there is active data to share.');
@@ -792,7 +756,6 @@
       let pkg = `====================================================================\n`;
       pkg += `SECURE COMIC STRIP SHARING PACKAGE (SECTIONS B, C, D & E ONLY)\n`;
       pkg += `====================================================================\n`;
-      pkg += `CONFIDENTIALITY NOTICE: NotebookLM reference archives and local API credentials are omitted by system guardrail.\n`;
       pkg += `Recipient: ${email}\n`;
       pkg += `Verification Phrase: ${password}\n`;
       pkg += `Docket Ref: ${activeSession.fileNumber}\n`;
@@ -830,7 +793,6 @@
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     }
 
-    // --- STEP 1: INITIALIZE DOCKET & GENERATE PROMPT ---
     async function generatePromptPackage() {
       const btn = document.getElementById('generateBtn');
       if (btn) {
@@ -889,8 +851,7 @@
         tone: currentSettings.tone,
         conflict: currentSettings.conflict,
         ending: currentSettings.ending,
-        prompt: fullGeminiPrompt,
-        description: `${currentSettings.series} (${currentSettings.panels}): ${currentSettings.conflict} [${currentSettings.tone}]. Cast: ${activeChars.join(', ')}.`
+        prompt: fullGeminiPrompt
       };
 
       const promptCard = document.getElementById('promptReviewCard');
@@ -1251,73 +1212,9 @@ Instructions:
       a.download = activeSession.filename;
       a.click();
 
-      recordToArchiveLog(activeSession);
       const statusEl = document.getElementById('docCreationStatus');
       if (statusEl) {
-        statusEl.innerHTML = `✓ Saved as: <strong>${activeSession.filename}</strong> and logged!`;
-      }
-    }
-
-    function recordToArchiveLog(session) {
-      try {
-        let log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-        log.unshift({
-          timestamp: session.timestamp,
-          filename: session.filename,
-          description: session.description
-        });
-        localStorage.setItem('funnies_archive_master_log', JSON.stringify(log));
-      } catch (e) {}
-      refreshArchiveTable();
-    }
-
-    function refreshArchiveTable() {
-      let log = [];
-      try {
-        log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-      } catch (e) { log = []; }
-
-      const tbody = document.querySelector('#masterArchiveTable tbody');
-      if (!tbody) return;
-
-      if (log.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No comic strips logged yet.</td></tr>`;
-        return;
-      }
-      let html = '';
-      log.forEach(item => {
-        html += `<tr>
-          <td>${item.timestamp || '--'}</td>
-          <td><strong>${item.filename || '--'}</strong></td>
-          <td>${item.description || '--'}</td>
-        </tr>`;
-      });
-      tbody.innerHTML = html;
-    }
-
-    function exportArchiveLogCSV() {
-      let log = [];
-      try {
-        log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-      } catch (e) { log = []; }
-
-      let csv = 'DateAndTime,FileName,ShortDescription\n';
-      log.forEach(r => {
-        csv += `"${r.timestamp || ''}","${r.filename || ''}","${(r.description || '').replace(/"/g, '""')}"\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `funnies_generator_log_${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-    }
-
-    function clearArchiveLog() {
-      if (confirm('Clear all entries in the Funnies Generator Log?')) {
-        try {
-          localStorage.removeItem('funnies_archive_master_log');
-        } catch (e) {}
-        refreshArchiveTable();
+        statusEl.innerHTML = `✓ Saved as: <strong>${activeSession.filename}</strong>!`;
       }
     }
 
@@ -1328,7 +1225,6 @@ Instructions:
     window.addEventListener('DOMContentLoaded', () => {
       populateCharacterPills(currentSettings.series);
       syncAdminUI();
-      refreshArchiveTable();
     });
   </script>
 </body>
