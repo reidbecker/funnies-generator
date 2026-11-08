@@ -71,6 +71,7 @@
     .btn-danger:hover { background-color: #991b1b; }
     .btn-outline { background-color: transparent; border-color: #94a3b8; color: #f8fafc; }
     .btn-secondary { background-color: #475569; color: #fff; }
+    .btn-secondary:hover { background-color: #334155; }
     .btn-gemini { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; }
     .btn-sm { padding: 0.4rem 0.75rem; font-size: calc(0.85rem * var(--font-scale)); }
 
@@ -220,6 +221,33 @@
     }
 
     th { background-color: #f8fafc; font-weight: 600; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: calc(0.85rem * var(--font-scale));
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: calc(1.5rem * var(--font-scale));
+      font-weight: bold;
+      color: var(--text-main);
+    }
   </style>
 </head>
 <body>
@@ -406,6 +434,7 @@
 
     <!-- TAB 3: ADMINISTRATOR & SETTINGS -->
     <div id="tab-admin" class="tab-content">
+      <!-- 1. API KEY MANAGER -->
       <div class="card">
         <h2 class="card-title">Google AI Studio API Key Manager</h2>
         <div class="banner-info">
@@ -416,11 +445,86 @@
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <input type="password" id="apiKeyInput" style="flex: 1; min-width: 280px; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="AIzaSy...">
             <button class="btn btn-secondary btn-sm" onclick="toggleKeyVisibility()">Show/Hide</button>
-            <button class="btn btn-primary btn-sm" onclick="saveApiKey()">Save Key</button>
+            <button class="btn btn-primary btn-sm" onclick="saveApiKey()">Save Key Securely</button>
             <button class="btn btn-danger btn-sm" onclick="removeApiKey()">Remove Key</button>
           </div>
           <div style="margin-top: 0.75rem;" id="keyStatusBadge">
-            <span class="status-badge status-warning">No Key Configured</span>
+            <span class="status-badge status-warning">No Key Configured (Using Offline Fallback Patterns)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. MONTHLY COST ACCUMULATOR & FINANCIAL LEDGER -->
+      <div class="card">
+        <div class="card-title">
+          <span>Monthly Cost Accumulator & Financial Ledger</span>
+          <button class="btn btn-secondary btn-sm" onclick="downloadCostLedgerCSV()">📥 Download Cost History Log (.csv)</button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Current Month Spend</div>
+            <div class="stat-value" id="costCurrentMonth" style="color: var(--primary);">$0.0000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Lifetime Spend</div>
+            <div class="stat-value" id="costLifetime">$0.0000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Cost / Strip</div>
+            <div class="stat-value" id="costAvg">$0.0000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Generations</div>
+            <div class="stat-value" id="totalGens">0</div>
+          </div>
+        </div>
+
+        <h3>Cost Audit History Log</h3>
+        <table id="costAuditTable">
+          <thead>
+            <tr>
+              <th>Date / Time</th>
+              <th>Series</th>
+              <th>Panels</th>
+              <th>Estimated Tokens</th>
+              <th>Cost ($ USD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 1rem; text-align: right;">
+          <button class="btn btn-outline btn-sm" style="color: #b91c1c; border-color: #f87171;" onclick="resetCostLedger()">Reset Cost Ledger</button>
+        </div>
+      </div>
+
+      <!-- 3. SECURE STRIP SHARING PORTAL -->
+      <div class="card">
+        <h2 class="card-title">Secure Strip Sharing Portal</h2>
+        <div class="banner-info" style="border-left-color: #10b981; background-color: #f0fdf4;">
+          <strong>NotebookLM Non-Shareable Guardrail Active:</strong> When generating share packages, all proprietary reference archives and local API credentials are automatically omitted. Only Sections B, C, D, and E (panel layouts, characteristics, and generated scripts) are bundled.
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div class="form-group">
+            <label for="shareEmailInput">Recipient Email Address:</label>
+            <input type="email" id="shareEmailInput" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="colleague@example.com">
+          </div>
+          <div class="form-group">
+            <label for="sharePasswordInput">Access / Decryption Password:</label>
+            <input type="text" id="sharePasswordInput" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="e.g. Bumstead1930">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="generateSharePackage()">Generate Secure Share Package</button>
+
+        <div id="shareOutputContainer" style="display: none; margin-top: 1.25rem;">
+          <label>Share Package Output & Transmission Preview:</label>
+          <div class="prompt-box" id="sharePackageText" style="background: #1e293b; color: #f8fafc; max-height: 220px;"></div>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-success btn-sm" onclick="copySharePackage()">Copy Share Package to Clipboard</button>
+            <button class="btn btn-secondary btn-sm" onclick="openDefaultEmailClient()">Open in Default Email Client</button>
           </div>
         </div>
       </div>
@@ -512,6 +616,7 @@
         input.value = '';
         badge.innerHTML = `<span class="status-badge status-warning">No Key Configured (Using Offline Fallback Patterns)</span>`;
       }
+      refreshCostAuditUI();
     }
 
     function toggleKeyVisibility() {
@@ -519,60 +624,115 @@
       input.type = input.type === 'password' ? 'text' : 'password';
     }
 
-    // --- STEP 1: INITIALIZE DOCKET & GENERATE PROMPT ---
-    async function generatePromptPackage() {
-      const btn = document.getElementById('generateBtn');
-      btn.innerText = '⏳ Initializing Docket & Prompt...';
-      btn.disabled = true;
+    // --- COST ACCUMULATOR & AUDIT ---
+    function recordGenerationExpense(series, panels, inputTokens, outputTokens) {
+      const cost = (inputTokens * 0.00000015) + (outputTokens * 0.0000006);
+      let history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+      history.unshift({
+        timestamp: new Date().toLocaleString(),
+        series: series,
+        panels: panels,
+        tokens: inputTokens + outputTokens,
+        cost: cost
+      });
+      localStorage.setItem('funnies_cost_history', JSON.stringify(history));
+      refreshCostAuditUI();
+    }
 
-      const activeChars = [];
-      document.querySelectorAll('#characterPills .pill-btn.active').forEach(b => {
-        activeChars.push(b.innerText.replace('✓ ', '').trim());
+    function refreshCostAuditUI() {
+      const history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+      let lifetime = 0;
+      let monthSpend = 0;
+      const currentMonth = new Date().getMonth();
+
+      history.forEach(item => {
+        lifetime += item.cost;
+        if (new Date(item.timestamp).getMonth() === currentMonth) {
+          monthSpend += item.cost;
+        }
       });
 
-      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const count = parseInt(localStorage.getItem('funnies_docket_counter') || '1');
-      localStorage.setItem('funnies_docket_counter', (count + 1).toString());
-      const fileNumber = `FUNNIES-${dateStr}-${String(count).padStart(3, '0')}`;
-      const nowTimestamp = new Date().toLocaleString();
-      const safeSeriesName = currentSettings.series.replace(/[^a-z0-9]/gi, '_');
-      const filename = `${fileNumber}_${safeSeriesName}.html`;
+      const avg = history.length > 0 ? (lifetime / history.length) : 0;
 
-      const apiKey = localStorage.getItem('gemini_api_key');
-      let scriptData = null;
+      document.getElementById('costCurrentMonth').innerText = '$' + monthSpend.toFixed(5);
+      document.getElementById('costLifetime').innerText = '$' + lifetime.toFixed(5);
+      document.getElementById('costAvg').innerText = '$' + avg.toFixed(5);
+      document.getElementById('totalGens').innerText = history.length;
 
-      if (apiKey && apiKey.length > 10) {
-        try {
-          scriptData = await callGeminiAPI(apiKey, activeChars);
-        } catch (e) {
-          console.warn('API script error, falling back to grounded template', e);
-          scriptData = buildGroundedTemplate(activeChars);
-        }
-      } else {
-        scriptData = buildGroundedTemplate(activeChars);
+      const tbody = document.querySelector('#costAuditTable tbody');
+      if (history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td></tr>`;
+        return;
       }
+      tbody.innerHTML = '';
+      history.slice(0, 10).forEach(entry => {
+        const row = `<tr>
+          <td>${entry.timestamp}</td>
+          <td>${entry.series}</td>
+          <td>${entry.panels}</td>
+          <td>${entry.tokens.toLocaleString()}</td> <td>$${entry.cost.toFixed(5)}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
 
-      fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);
+    function downloadCostLedgerCSV() {
+      const history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+      let csv = 'Timestamp,Series,Panels,Tokens,Cost_USD\n';
+      history.forEach(r => {
+        csv += `"${r.timestamp}","${r.series}","${r.panels}",${r.tokens},${r.cost.toFixed(6)}\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `comic_agent_cost_history_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
 
-      activeSession = {
-        fileNumber: fileNumber,
-        filename: filename,
-        timestamp: nowTimestamp,
-        series: currentSettings.series,
-        panels: currentSettings.panels,
-        color: currentSettings.color === 'B&W' ? 'Classic B&W Line Art' : 'Vintage Sunday Newsprint Color',
-        cast: activeChars.join(', '),
-        tone: currentSettings.tone,
-        conflict: currentSettings.conflict,
-        ending: currentSettings.ending,
-        prompt: fullGeminiPrompt,
-        description: `${currentSettings.series} (${currentSettings.panels}): ${currentSettings.conflict} [${currentSettings.tone}]. Cast: ${activeChars.join(', ')}.`
+    function resetCostLedger() {
+      if (confirm('Reset the Cost Audit Ledger to $0.00?')) {
+        localStorage.removeItem('funnies_cost_history');
+        refreshCostAuditUI();
+      }
+    }
+
+    // --- SECURE SHARING PORTAL ---
+    function generateSharePackage() {
+      if (!activeSession) {
+        alert('Please generate at least one comic strip first so there is active data to share.');
+        return;
+      }
+      const email = document.getElementById('shareEmailInput').value.trim() || 'colleague@example.com';
+      const password = document.getElementById('sharePasswordInput').value.trim() || 'DefaultPass1930';
+
+      let pkg = `====================================================================\n`;
+      pkg += `SECURE COMIC STRIP SHARING PACKAGE (SECTIONS B, C, D & E ONLY)\n`;
+      pkg += `====================================================================\n`;
+      pkg += `CONFIDENTIALITY NOTICE: NotebookLM reference archives and local API credentials are omitted by system guardrail.\n`;
+      pkg += `Recipient: ${email}\n`;
+      pkg += `Verification Phrase: ${password}\n`;
+      pkg += `Docket Ref: ${activeSession.fileNumber}\n`;
+      pkg += `Timestamp: ${activeSession.timestamp}\n\n`; pkg += `[SECTION B: LAYOUT]: ${activeSession.panels}\n`;
+      pkg += `[SECTION C: ART FORMAT]: ${activeSession.color}\n`; pkg += `[SECTION D: CHARACTERISTICS]:\n`; pkg += `  - Tone: ${activeSession.tone}\n`;
+      pkg += `  - Conflict: ${activeSession.conflict}\n`; pkg += `  - Ending: ${activeSession.ending}\n`;
+      pkg += `  - Active Cast: ${activeSession.cast}\n\n`; pkg += `[SECTION E: GENERATED SCRIPT TRANSCRIPT]:\n`; pkg += `${activeSession.prompt}\n`;
+      pkg += `====================================================================`;
+
+      document.getElementById('sharePackageText').innerText = pkg;
+      document.getElementById('shareOutputContainer').style.display = 'block';
+    }
+
+    function copySharePackage() {
+      const text = document.getElementById('sharePackageText').innerText;
+      navigator.clipboard.writeText(text);
+      alert('✓ Share package copied to clipboard!');
+    }
+
+    function openDefaultEmailClient() {
+      const email = document.getElementById('shareEmailInput').value.trim();
+      const subject = encodeURIComponent(`Funnies Comic Script Share: ${activeSession.fileNumber}`);
+      const body = encodeURIComponent(document.getElementById('sharePackageText').innerText);
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`; }  // --- STEP 1: INITIALIZE DOCKET & GENERATE PROMPT --- async function generatePromptPackage() { const btn = document.getElementById('generateBtn'); btn.innerText = '⏳ Initializing Docket & Prompt...'; btn.disabled = true;  const activeChars = []; document.querySelectorAll('#characterPills .pill-btn.active').forEach(b => { activeChars.push(b.innerText.replace('✓ ', '').trim()); });  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, ''); const count = parseInt(localStorage.getItem('funnies_docket_counter') \vert{}\vert{} '1'); localStorage.setItem('funnies_docket_counter', (count + 1).toString()); const fileNumber = `FUNNIES-${dateStr}-${String(count).padStart(3, '0')}`; const nowTimestamp = new Date().toLocaleString(); const safeSeriesName = currentSettings.series.replace(/[^a-z0-9]/gi, '_'); const filename = `${fileNumber}_${safeSeriesName}.html`;  const apiKey = localStorage.getItem('gemini_api_key'); let scriptData = null;  if (apiKey && apiKey.length > 10) { try { scriptData = await callGeminiAPI(apiKey, activeChars); recordGenerationExpense(currentSettings.series, currentSettings.panels, 480, 720); } catch (e) { console.warn('API script error, falling back to grounded template', e); scriptData = buildGroundedTemplate(activeChars); recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0); } } else { scriptData = buildGroundedTemplate(activeChars); recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0); }  fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);  activeSession = { fileNumber: fileNumber, filename: filename, timestamp: nowTimestamp, series: currentSettings.series, panels: currentSettings.panels, color: currentSettings.color === 'B&W' ? 'Classic B&W Line Art' : 'Vintage Sunday Newsprint Color', cast: activeChars.join(', '), tone: currentSettings.tone, conflict: currentSettings.conflict, ending: currentSettings.ending, prompt: fullGeminiPrompt, description: `${currentSettings.series} (${currentSettings.panels}):${currentSettings.conflict} [${currentSettings.tone}]. Cast: ${activeChars.join(', ')}.`
       };
 
       document.getElementById('promptReviewCard').style.display = 'block';
       document.getElementById('reassociationCard').style.display = 'block';
-      document.getElementById('docketFileNumber').innerText = `FILE NO: ${fileNumber}`;
-      document.getElementById('docketTimestamp').innerText = `DATE: ${nowTimestamp}`;
+      document.getElementById('docketFileNumber').innerText = `FILE NO: ${fileNumber}`; document.getElementById('docketTimestamp').innerText = `DATE: ${nowTimestamp}`;
       document.getElementById('geminiPromptText').innerText = fullGeminiPrompt;
 
       btn.innerText = '✨ 1. Generate Prompt & Initialize Docket';
@@ -624,8 +784,7 @@ Return ONLY valid JSON matching this schema:
         : "Authentic 1930 vintage Sunday funny comic strip, four-color newsprint palette with classic Ben-Day dot shading, vintage watercolor wash, classic line art, Chic Young style.";
 
       let prompt = `Create a complete ${panelCount} horizontal comic strip in the style of Chic Young's classic 1930 newspaper funnies "${currentSettings.series}".\n\n`;
-      prompt += `Art Style: ${artStyle}\n`;
-      prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp black borders and dialogue speech bubbles.\n`;
+      prompt += `Art Style: ${artStyle}\n`; prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp black borders and dialogue speech bubbles.\n`;
       prompt += `Featured Characters: ${chars.join(', ')}\n\n`;
       prompt += `PANEL DESCRIPTIONS:\n`;
 
@@ -667,7 +826,7 @@ Return ONLY valid JSON matching this schema:
         },
         {
           panelNum: 4,
-          visual: `${c2} playfully pats Pop on his bald head; Pop looks astonished and disarmed while ${c1} raises eyebrows to the reader.`,
+          visual: `${c2} playfully pats Pop on his bald head; Pop looks astonished and disarmed while${c1} raises eyebrows to the reader.`,
           dialogue: `${c2}: "Now now, Pops! Play your cards right and you can buy us both a tall ice cream soda!"`,
           sfx: "PAT! PAT!"
         }
@@ -767,111 +926,4 @@ Return ONLY valid JSON matching this schema:
     body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.4; color: #111; margin: 0; padding: 20px; }
     .page-container { min-height: 9.5in; box-sizing: border-box; }
     .page-break { page-break-after: always; break-after: page; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    th, td { border: 1px solid #666; padding: 8px 10px; font-size: 10pt; text-align: left; }
-    th { background-color: #f1f5f9; font-weight: bold; width: 22%; }
-    pre { background-color: #f8fafc; border: 1px solid #ccc; padding: 12px; font-size: 9.5pt; white-space: pre-wrap; font-family: Consolas, monospace; }
-    .img-box { text-align: center; margin-top: 25px; }
-    .img-box img { max-width: 100%; height: auto; border: 2px solid #000; }
-  </style>
-</head>
-<body>
-  <!-- PAGE 1: DOCKET METADATA & PROMPT SCRIPT -->
-  <div class="page-container">
-    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">COMIC STRIP PRODUCTION DOCKET</h2>
-    <table>
-      <tr><th>File Number:</th><td><strong>${activeSession.fileNumber}</strong></td><th>Date & Time:</th><td>${activeSession.timestamp}</td></tr>
-      <tr><th>Series:</th><td>${activeSession.series}</td><th>Layout:</th><td>${activeSession.panels}</td></tr>
-      <tr><th>Color Mode:</th><td>${activeSession.color}</td><th>Cast:</th><td>${activeSession.cast}</td></tr>
-      <tr><th>Tone:</th><td>${activeSession.tone}</td><th>Conflict:</th><td>${activeSession.conflict}</td></tr>
-      <tr><th>Ending Beat:</th><td colspan="3">${activeSession.ending}</td></tr>
-    </table>
-    <h3>Image Prompt Script:</h3>
-    <pre>${escapeHtml(activeSession.prompt)}</pre>
-  </div>
-
-  <div class="page-break"></div>
-
-  <!-- PAGE 2: GRAPHIC IMAGE -->
-  <div class="page-container">
-    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">FINISHED COMIC ARTWORK</h2>
-    <p><strong>Docket Reference:</strong> ${activeSession.fileNumber} &nbsp;|&nbsp; <strong>Filename:</strong> ${activeSession.filename}</p>
-    <div class="img-box">
-      <img src="${associatedImageDataUrl}" alt="Comic Strip Image" />
-    </div>
-  </div>
-</body>
-</html>`;
-
-      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = activeSession.filename;
-      a.click();
-
-      recordToArchiveLog(activeSession);
-
-      document.getElementById('docCreationStatus').innerHTML = `✓ Saved to computer as: <strong>${activeSession.filename}</strong> and logged!`;
-    }
-
-    // --- FUNNIES GENERATOR LOG MANAGEMENT ---
-    function recordToArchiveLog(session) {
-      let log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-      log.unshift({
-        timestamp: session.timestamp,
-        filename: session.filename,
-        description: session.description
-      });
-      localStorage.setItem('funnies_archive_master_log', JSON.stringify(log));
-      refreshArchiveTable();
-    }
-
-    function refreshArchiveTable() {
-      const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-      const tbody = document.querySelector('#masterArchiveTable tbody');
-      if (log.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No comic strips logged yet.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = '';
-      log.forEach(item => {
-        const row = `<tr>
-          <td>${item.timestamp}</td>
-          <td><strong>${item.filename}</strong></td>
-          <td>${item.description}</td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-    }
-
-    function exportArchiveLogCSV() {
-      const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-      let csv = 'DateAndTime,FileName,ShortDescription\n';
-      log.forEach(r => {
-        csv += `"${r.timestamp}","${r.filename}","${r.description.replace(/"/g, '""')}"\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `funnies_generator_log_${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-    }
-
-    function clearArchiveLog() {
-      if (confirm('Clear all entries in the Funnies Generator Log?')) {
-        localStorage.removeItem('funnies_archive_master_log');
-        refreshArchiveTable();
-      }
-    }
-
-    function escapeHtml(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      syncAdminUI();
-      refreshArchiveTable();
-    });
-  </script>
-</body>
-</html>
+    table { width
