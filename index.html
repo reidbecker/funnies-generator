@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Funnies Generator & Public Domain Comic Archive Agent</title>
+
+  <!-- =========================================================================
+       SECTION: VISUAL STYLES & LAYOUT (CSS)
+       PURPOSE:
+       Controls all the visual presentation of the page. It sets colors, fonts,
+       margins, card borders, buttons, responsive grid layouts for the comic panels,
+       and printer styles for generating PDF/paper dossiers.
+       ========================================================================= -->
   <style>
     :root {
       --bg-color: #f4f6f9;
@@ -251,6 +259,12 @@
 </head>
 <body>
 
+  <!-- =========================================================================
+       SECTION: APPLICATION HEADER & TOP CONTROLS
+       PURPOSE:
+       Displays the main title banner and top-level utility controls, such as the
+       'Aa Large Text' accessibility toggle to increase font size for readability.
+       ========================================================================= -->
   <header>
     <div>
       <h1>Funnies Generator & Archive Agent</h1>
@@ -260,18 +274,40 @@
     </div>
   </header>
 
+  <!-- =========================================================================
+       SECTION: TOP NAVIGATION BAR
+       PURPOSE:
+       Enables one-click switching between the two primary views of the application:
+       1) 'Funnies Generator' (the creative workspace)
+       2) 'Administrator & Settings' (API key manager, cost tracker, and sharing)
+       ========================================================================= -->
   <nav>
     <button class="nav-tab active" id="nav-btn-generator" type="button" onclick="switchTab('generator', this)">🎨 Funnies Generator</button>
     <button class="nav-tab" id="nav-btn-admin" type="button" onclick="switchTab('admin', this)">⚙️ Administrator & Settings</button>
   </nav>
 
   <main>
-    <!-- TAB 1: FUNNIES GENERATOR -->
+    <!-- =======================================================================
+         TAB 1: FUNNIES GENERATOR WORKSPACE
+         PURPOSE:
+         Contains the complete end-to-end creative workflow:
+         - Selecting the strip parameters (Series, Layout, Characters, Tone, Period)
+         - Reviewing the formatted prompt docket
+         - Opening Gemini in a new window
+         - Dropping the completed artwork back in to export a 2-page dossier
+         ======================================================================= -->
     <div id="tab-generator" class="tab-content active">
       <div class="banner-info">
         <strong>Dynamic Selection Engine Active:</strong> Scripts, character casts, narrative conflicts, historical period aesthetics, and prompt scripts update immediately to reflect all chosen attributes.
       </div>
 
+      <!-- =====================================================================
+           SECTION A: SERIES, LAYOUT & CHARACTERS
+           PURPOSE:
+           Allows the user to select the comic strip title (e.g. Blondie, Popeye),
+           whether it is a 4-panel daily or 6-panel Sunday, black & white vs color,
+           and selects which characters from that strip appear in the scene.
+           ===================================================================== -->
       <div class="card">
         <h2 class="card-title">SECTION A: Series & Characters</h2>
         <div class="form-group">
@@ -296,7 +332,7 @@
             <label>Art Style & Color:</label>
             <div class="pill-group" id="colorGroup">
               <button class="pill-btn active" type="button" onclick="selectSinglePill('colorGroup', this, 'B&W')">Classic B&W Line Art</button>
-              <button class="pill-btn" type="button" onclick="selectSinglePill('colorGroup', this, 'Color')">Vintage Sunday Newsprint Color</button>
+              <button class="pill-btn" onclick="selectSinglePill('colorGroup', this, 'Color')">Vintage Sunday Newsprint Color</button>
             </div>
           </div>
         </div>
@@ -304,11 +340,19 @@
         <div class="form-group">
           <label>Active Characters in Selected Series:</label>
           <div class="pill-group" id="characterPills">
-            <!-- Dynamically populated based on series -->
+            <!-- Dynamically populated based on selected series -->
           </div>
         </div>
       </div>
 
+      <!-- =====================================================================
+           SECTION B: GAG TONE, CONFLICT & ENDING BEAT
+           PURPOSE:
+           Controls the narrative direction of the comic gag:
+           - Overall comedic tone (warm, slapstick, satire)
+           - The core problem/conflict (domestic routine, authority clash, errand)
+           - How the final panel punchline resolves (4th-wall break, resignation, dust exit)
+           ===================================================================== -->
       <div class="card">
         <h2 class="card-title">SECTION B: Gag Tone & Conflict</h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
@@ -341,7 +385,14 @@
         </div>
       </div>
 
-      <!-- SECTION C: PERIOD -->
+      <!-- =====================================================================
+           SECTION C: PERIOD / HISTORICAL ERA
+           PURPOSE:
+           Injects historically accurate drawing techniques, printing dot patterns,
+           and artistic constraints into the prompt (e.g. 1910-1929 dip pen vs.
+           1950s atomic age halftone vs. 2010s digital).
+           Also houses the master 'Generate Prompt' launch button.
+           ===================================================================== -->
       <div class="card">
         <h2 class="card-title">SECTION C: Period</h2>
         <div class="form-group">
@@ -366,7 +417,13 @@
         </div>
       </div>
 
-      <!-- PROMPT REVIEW CARD -->
+      <!-- =====================================================================
+           DOCKET & PROMPT REVIEW CARD (REVEALED AFTER GENERATION)
+           PURPOSE:
+           Displays the newly stamped sequential file docket number (e.g.
+           FUNNIES-20261108-001) and the finished, assembled prompt text.
+           Provides convenient buttons to copy the prompt and launch Gemini in a new tab.
+           ===================================================================== -->
       <div class="card" id="promptReviewCard" style="display: none;">
         <div class="card-title">
           <span>Active Session Docket</span>
@@ -393,7 +450,14 @@
         </div>
       </div>
 
-      <!-- RE-ASSOCIATION & EXPORTER -->
+      <!-- =====================================================================
+           IMAGE DROP ZONE & 2-PAGE DOSSIER EXPORTER
+           PURPOSE:
+           Where the loop closes: the user drags/pastes the finished comic strip
+           from Gemini into this drop box. The app binds the graphic back to the
+           docket number and metadata, enabling immediate download of the 2-page
+           HTML document for local storage or Google Drive archiving.
+           ===================================================================== -->
       <div class="card" id="reassociationCard" style="display: none;">
         <h2 class="card-title">2. Associate Generated Image & Save 2-Page Document</h2>
         <p>After Gemini finishes creating your graphic, copy or save it, then paste or drop it below. The application will bind it to your file number, criteria, and prompt, and save your two-page document to your computer.</p>
@@ -416,7 +480,14 @@
       </div>
     </div>
 
-    <!-- TAB 2: ADMINISTRATOR & SETTINGS -->
+    <!-- =======================================================================
+         TAB 2: ADMINISTRATOR & SETTINGS
+         PURPOSE:
+         Administrative controls:
+         1) Secure local API Key management
+         2) Monthly Cost Accumulator & financial audit ledger
+         3) Secure Strip Sharing portal for emailing prompts without leaking API keys
+         ======================================================================= -->
     <div id="tab-admin" class="tab-content">
       <!-- 1. API KEY MANAGER -->
       <div class="card">
@@ -515,7 +586,20 @@
     </div>
   </main>
 
+  <!-- =========================================================================
+       SECTION: JAVASCRIPT PROGRAM LOGIC
+       PURPOSE:
+       The engine of the application that handles user interactions, maintains
+       in-memory session states, talks to the Gemini API, calculates costs,
+       and builds the downloadable HTML documents.
+       ========================================================================= -->
   <script>
+    /* =========================================================================
+       SUB-SECTION: STATIC DATA DEFINITIONS (SERIES CASTS & PERIOD PROMPTS)
+       PURPOSE:
+       Canonical dictionaries that map each comic series to its authentic historical
+       characters, and each era to its period art description.
+       ========================================================================= */
     const SERIES_CASTS = {
       'Blondie & Dagwood': ['Dagwood Bumstead', 'Blondie Boopadoop', 'J. Bolling Bumstead (Pop)', 'Daisy the Dog', 'Irma'],
       'Popeye / Thimble Theatre': ['Popeye the Sailor', 'Olive Oyl', 'Castor Oyl', 'Ham Gravy', 'J. Wellington Wimpy'],
@@ -532,6 +616,11 @@
       '2010-present': 'Art Style: Contemporary digital comic strip aesthetic, crisp vector-grade line art, modern full-spectrum digital coloring, and clean modern typographic balloons.'
     };
 
+    /* =========================================================================
+       SUB-SECTION: GLOBAL STATE VARIABLES
+       PURPOSE:
+       Tracks the active selections and the currently generated session data.
+       ========================================================================= */
     let currentSettings = {
       series: 'Blondie & Dagwood',
       panels: '4-Panel',
@@ -546,6 +635,11 @@
     let fullGeminiPrompt = "";
     let associatedImageDataUrl = null;
 
+    /* =========================================================================
+       SUB-SECTION: ACCESSIBILITY & DISPLAY HELPERS
+       PURPOSE:
+       Manages font scaling toggles and persistent preferences in localStorage.
+       ========================================================================= */
     function toggleLargeText() {
       document.body.classList.toggle('large-text');
       try {
@@ -559,6 +653,12 @@
       }
     } catch (e) {}
 
+    /* =========================================================================
+       SUB-SECTION: TAB NAVIGATION ROUTER
+       PURPOSE:
+       Switches the visible card containers between the Generator workspace and the
+       Administrator settings panel without causing reloads or freeze-ups.
+       ========================================================================= */
     function switchTab(tabId, clickedBtn) {
       const tabs = ['generator', 'admin'];
       tabs.forEach(t => {
@@ -578,6 +678,12 @@
       }
     }
 
+    /* =========================================================================
+       SUB-SECTION: ATTRIBUTE SELECTION CONTROLLERS
+       PURPOSE:
+       Handles clicking on pill buttons for Series, Period, Panels, Color, and
+       Characters. Automatically rebuilds the character list when Series changes.
+       ========================================================================= */
     function selectSeries(seriesName, btn) {
       document.getElementById('seriesGroup').querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -629,6 +735,12 @@
       }
     }
 
+    /* =========================================================================
+       SUB-SECTION: API KEY PERSISTENCE & MANAGEMENT
+       PURPOSE:
+       Saves the user's Gemini API key privately into browser local storage,
+       displays status badges, and provides show/hide/delete controls.
+       ========================================================================= */
     function saveApiKey() {
       const input = document.getElementById('apiKeyInput');
       if (!input) return;
@@ -683,6 +795,12 @@
       }
     }
 
+    /* =========================================================================
+       SUB-SECTION: FINANCIAL COST LEDGER & AUDITING
+       PURPOSE:
+       Calculates real-time estimated input/output token costs for Gemini Flash,
+       tracks monthly and lifetime spend, and exports logs as CSV files.
+       ========================================================================= */
     function recordGenerationExpense(series, panels, inputTokens, outputTokens) {
       try {
         const cost = (inputTokens * 0.00000015) + (outputTokens * 0.0000006);
@@ -782,6 +900,12 @@
       }
     }
 
+    /* =========================================================================
+       SUB-SECTION: SECURE STRIP SHARING PORTAL
+       PURPOSE:
+       Packages the generated comic script, character definitions, and layout
+       into a clean email-ready transmission while ensuring private API keys are omitted.
+       ========================================================================= */
     function generateSharePackage() {
       if (!activeSession) {
         alert('Please generate at least one comic strip first so there is active data to share.');
@@ -833,6 +957,14 @@
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     }
 
+    /* =========================================================================
+       SUB-SECTION: DOCKET INITIALIZATION & PROMPT ASSEMBLY
+       PURPOSE:
+       Coordinates the entire generation request:
+       - Increments the serialized daily docket counter (FUNNIES-YYYYMMDD-###)
+       - Calls either live Gemini or the dynamic offline generator
+       - Assembles the final structured prompt for the user to copy into Gemini
+       ========================================================================= */
     async function generatePromptPackage() {
       const btn = document.getElementById('generateBtn');
       if (btn) {
@@ -915,6 +1047,12 @@
       if (promptCard) promptCard.scrollIntoView({ behavior: 'smooth' });
     }
 
+    /* =========================================================================
+       SUB-SECTION: LIVE GEMINI FLASH API CONNECTOR
+       PURPOSE:
+       Sends an HTTPS POST request to Google's Gemini 2.5 Flash endpoint using the
+       saved API key, demanding structured JSON script panels matching the prompt.
+       ========================================================================= */
     async function callGeminiAPI(apiKey, chars) {
       const periodPromptText = PERIOD_PROMPTS[currentSettings.period] || PERIOD_PROMPTS['1910-1929'];
       const prompt = `Write an authentic comic strip script for "${currentSettings.series}".
@@ -955,6 +1093,13 @@ Instructions:
       return JSON.parse(data.candidates[0].content.parts[0].text);
     }
 
+    /* =========================================================================
+       SUB-SECTION: DYNAMIC OFFLINE SCRIPT ENGINE (FALLBACK)
+       PURPOSE:
+       When no API key is provided or offline, this generates series-specific,
+       period-accurate comic scripts with appropriate slang for Popeye,
+       Bringing Up Father, Krazy Kat, or Blondie.
+       ========================================================================= */
     function buildDynamicScript(chars) {
       const series = currentSettings.series;
       const isSix = currentSettings.panels === '6-Panel';
@@ -1114,6 +1259,12 @@ Instructions:
       };
     }
 
+    /* =========================================================================
+       SUB-SECTION: FORMATTED GEMINI PROMPT COMPILER
+       PURPOSE:
+       Merges the panel script, period art prompt, color mode, and layout instructions
+       into the single master prompt text ready to be pasted into Gemini Image Generation.
+       ========================================================================= */
     function buildFormattedGeminiPrompt(data, chars) {
       const panelCount = currentSettings.panels;
       const periodPromptText = PERIOD_PROMPTS[currentSettings.period] || PERIOD_PROMPTS['1910-1929'];
@@ -1142,6 +1293,12 @@ Instructions:
       return prompt;
     }
 
+    /* =========================================================================
+       SUB-SECTION: EXTERNAL GEMINI BRIDGE
+       PURPOSE:
+       Copies the prompt text to the system clipboard and opens the official Gemini
+       chat application in a new browser tab.
+       ========================================================================= */
     function copyGeminiPrompt() {
       navigator.clipboard.writeText(fullGeminiPrompt);
       alert('✓ Prompt copied! Click "Open Gemini", paste the prompt, and press Enter to render the image.');
@@ -1151,6 +1308,12 @@ Instructions:
       window.open('https://gemini.google.com/app', '_blank');
     }
 
+    /* =========================================================================
+       SUB-SECTION: IMAGE INGESTION & DRAG-AND-DROP RE-ASSOCIATION
+       PURPOSE:
+       Accepts image files from desktop browsing, drag-and-drop, or Ctrl+V pasting.
+       Converts the image to a base64 Data URL and locks it to the current docket.
+       ========================================================================= */
     function triggerFileInput() {
       const input = document.getElementById('manualImageFileInput');
       if (input) input.click();
@@ -1205,6 +1368,15 @@ Instructions:
       reader.readAsDataURL(file);
     }
 
+    /* =========================================================================
+       SUB-SECTION: 2-PAGE DOSSIER COMPILER & EXPORTER
+       PURPOSE:
+       Creates an HTML bundle with CSS pagination containing:
+       - Page 1: Docket metadata table and complete prompt script
+       - Hard Page Break
+       - Page 2: High-resolution rendered comic artwork
+       Triggers an instant download of the file to the user's computer.
+       ========================================================================= */
     function saveTwoPageDocumentToComputer() {
       if (!associatedImageDataUrl || !activeSession) return;
 
@@ -1264,6 +1436,12 @@ Instructions:
       }
     }
 
+    /* =========================================================================
+       SUB-SECTION: STRING SANITIZATION & INITIALIZATION
+       PURPOSE:
+       Escapes dangerous characters when displaying user prompts and runs startup
+       functions (populating characters, checking stored keys) upon page load.
+       ========================================================================= */
     function escapeHtml(s) {
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
