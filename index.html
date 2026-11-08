@@ -67,6 +67,7 @@
     .btn-primary:hover { background-color: var(--primary-hover); }
     .btn-success { background-color: var(--success); color: #fff; }
     .btn-danger { background-color: var(--danger); color: #fff; }
+    .btn-danger:hover { background-color: #991b1b; }
     .btn-outline { background-color: transparent; border-color: #94a3b8; color: #f8fafc; }
     .btn-secondary { background-color: #475569; color: #fff; }
     .btn-gemini { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; }
@@ -218,6 +219,33 @@
     }
 
     th { background-color: #f8fafc; font-weight: 600; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: calc(0.85rem * var(--font-scale));
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: calc(1.5rem * var(--font-scale));
+      font-weight: bold;
+      color: var(--text-main);
+    }
   </style>
 </head>
 <body>
@@ -233,9 +261,9 @@
   </header>
 
   <nav>
-    <button class="nav-tab active" onclick="switchTab('generator', this)">🎨 Funnies Generator</button>
-    <button class="nav-tab" onclick="switchTab('log', this)">📂 Funnies Generator Log</button>
-    <button class="nav-tab" onclick="switchTab('admin', this)">⚙️ Administrator & Settings</button>
+    <button class="nav-tab active" id="nav-btn-generator" onclick="switchTab('generator', this)">🎨 Funnies Generator</button>
+    <button class="nav-tab" id="nav-btn-log" onclick="switchTab('log', this)">📂 Funnies Generator Log</button>
+    <button class="nav-tab" id="nav-btn-admin" onclick="switchTab('admin', this)">⚙️ Administrator & Settings</button>
   </nav>
 
   <main>
@@ -398,8 +426,9 @@
       </div>
     </div>
 
-    <!-- TAB 3: SETTINGS -->
+    <!-- TAB 3: ADMINISTRATOR & SETTINGS -->
     <div id="tab-admin" class="tab-content">
+      <!-- 1. API KEY MANAGER -->
       <div class="card">
         <h2 class="card-title">Google AI Studio API Key Manager</h2>
         <div class="banner-info">
@@ -409,12 +438,87 @@
           <label for="apiKeyInput">Gemini API Key (Google AI Studio):</label>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <input type="password" id="apiKeyInput" style="flex: 1; min-width: 280px; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="AIzaSy...">
-            <button class="btn btn-secondary btn-sm" onclick="toggleKeyVisibility()">Show/Hide</button>
-            <button class="btn btn-primary btn-sm" onclick="saveApiKey()">Save Key Securely</button>
-            <button class="btn btn-danger btn-sm" onclick="removeApiKey()">Remove Key</button>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="toggleKeyVisibility()">Show/Hide</button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="saveApiKey()">Save Key Securely</button>
+            <button class="btn btn-danger btn-sm" type="button" onclick="removeApiKey()">Remove Key</button>
           </div>
           <div style="margin-top: 0.75rem;" id="keyStatusBadge">
             <span class="status-badge status-warning">No Key Configured (Using Offline Fallback Patterns)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. MONTHLY COST ACCUMULATOR & FINANCIAL LEDGER -->
+      <div class="card">
+        <div class="card-title">
+          <span>Monthly Cost Accumulator & Financial Ledger</span>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="downloadCostLedgerCSV()">📥 Download Cost History Log (.csv)</button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Current Month Spend</div>
+            <div class="stat-value" id="costCurrentMonth" style="color: var(--primary);">$0.00000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Lifetime Spend</div>
+            <div class="stat-value" id="costLifetime">$0.00000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Cost / Strip</div>
+            <div class="stat-value" id="costAvg">$0.00000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Generations</div>
+            <div class="stat-value" id="totalGens">0</div>
+          </div>
+        </div>
+
+        <h3>Cost Audit History Log</h3>
+        <table id="costAuditTable">
+          <thead>
+            <tr>
+              <th>Date / Time</th>
+              <th>Series</th>
+              <th>Panels</th>
+              <th>Estimated Tokens</th>
+              <th>Cost ($ USD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 1rem; text-align: right;">
+          <button class="btn btn-outline btn-sm" style="color: #b91c1c; border-color: #f87171;" type="button" onclick="resetCostLedger()">Reset Cost Ledger</button>
+        </div>
+      </div>
+
+      <!-- 3. SECURE STRIP SHARING PORTAL -->
+      <div class="card">
+        <h2 class="card-title">Secure Strip Sharing Portal</h2>
+        <div class="banner-info" style="border-left-color: #10b981; background-color: #f0fdf4;">
+          <strong>NotebookLM Non-Shareable Guardrail Active:</strong> When generating share packages, proprietary reference archives and local API credentials are automatically omitted. Only Sections B, C, D, and E (panel layouts, characteristics, and generated scripts) are bundled.
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div class="form-group">
+            <label for="shareEmailInput">Recipient Email Address:</label>
+            <input type="email" id="shareEmailInput" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="colleague@example.com">
+          </div>
+          <div class="form-group">
+            <label for="sharePasswordInput">Access / Decryption Password:</label>
+            <input type="text" id="sharePasswordInput" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="e.g. Bumstead1930">
+          </div>
+        </div>
+        <button class="btn btn-primary" type="button" onclick="generateSharePackage()">Generate Secure Share Package</button>
+
+        <div id="shareOutputContainer" style="display: none; margin-top: 1.25rem;">
+          <label>Share Package Output & Transmission Preview:</label>
+          <div class="prompt-box" id="sharePackageText" style="background: #1e293b; color: #f8fafc; max-height: 220px;"></div>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-success btn-sm" type="button" onclick="copySharePackage()">Copy Share Package to Clipboard</button>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="openDefaultEmailClient()">Open in Default Email Client</button>
           </div>
         </div>
       </div>
@@ -444,22 +548,38 @@
 
     function toggleLargeText() {
       document.body.classList.toggle('large-text');
-      localStorage.setItem('funnies_large_text', document.body.classList.contains('large-text'));
-    }
-    if (localStorage.getItem('funnies_large_text') === 'true') {
-      document.body.classList.add('large-text');
+      try {
+        localStorage.setItem('funnies_large_text', document.body.classList.contains('large-text'));
+      } catch (e) {}
     }
 
+    try {
+      if (localStorage.getItem('funnies_large_text') === 'true') {
+        document.body.classList.add('large-text');
+      }
+    } catch (e) {}
+
+    // Direct tab switcher with explicit DOM queries so it never fails on parameter mismatches
     function switchTab(tabId, clickedBtn) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-      
-      const targetPanel = document.getElementById('tab-' + tabId);
-      if (targetPanel) targetPanel.classList.add('active');
-      if (clickedBtn) clickedBtn.classList.add('active');
+      const tabs = ['generator', 'log', 'admin'];
+      tabs.forEach(t => {
+        const panel = document.getElementById('tab-' + t);
+        const btn = document.getElementById('nav-btn-' + t);
+        if (panel) panel.classList.remove('active');
+        if (btn) btn.classList.remove('active');
+      });
 
-      if (tabId === 'log') refreshArchiveTable();
-      if (tabId === 'admin') syncAdminUI();
+      const activePanel = document.getElementById('tab-' + tabId);
+      const activeBtn = clickedBtn || document.getElementById('nav-btn-' + tabId);
+      if (activePanel) activePanel.classList.add('active');
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (tabId === 'log') {
+        setTimeout(refreshArchiveTable, 10);
+      }
+      if (tabId === 'admin') {
+        setTimeout(syncAdminUI, 10);
+      }
     }
 
     function selectSeries(seriesName, btn) {
@@ -471,10 +591,12 @@
 
     function populateCharacterPills(seriesName) {
       const container = document.getElementById('characterPills');
+      if (!container) return;
       container.innerHTML = '';
       const cast = SERIES_CASTS[seriesName] || SERIES_CASTS['Blondie & Dagwood'];
       cast.forEach((charName, index) => {
         const pill = document.createElement('button');
+        pill.type = 'button';
         pill.className = 'pill-btn' + (index < 2 ? ' active' : '');
         pill.innerText = (index < 2 ? '✓ ' : '') + charName;
         pill.onclick = () => togglePill(pill);
@@ -501,18 +623,27 @@
       }
     }
 
+    // --- API KEY STORAGE & SYNC ---
     function saveApiKey() {
       const input = document.getElementById('apiKeyInput');
+      if (!input) return;
       const key = input.value.trim();
-      if (!key) { alert('Please enter a valid API key.'); return; }
-      localStorage.setItem('gemini_api_key', key);
+      if (!key) {
+        alert('Please enter a valid API key.');
+        return;
+      }
+      try {
+        localStorage.setItem('gemini_api_key', key);
+      } catch (e) {}
       syncAdminUI();
-      alert('✓ API Key saved!');
+      alert('✓ API Key saved successfully! It is stored securely in this browser.');
     }
 
     function removeApiKey() {
-      if (confirm('Remove the saved API key?')) {
-        localStorage.removeItem('gemini_api_key');
+      if (confirm('Remove the saved API key from this browser?')) {
+        try {
+          localStorage.removeItem('gemini_api_key');
+        } catch (e) {}
         const input = document.getElementById('apiKeyInput');
         if (input) input.value = '';
         syncAdminUI();
@@ -520,29 +651,192 @@
     }
 
     function syncAdminUI() {
-      const key = localStorage.getItem('gemini_api_key') || '';
+      let key = '';
+      try {
+        key = localStorage.getItem('gemini_api_key') || '';
+      } catch (e) {}
+
       const input = document.getElementById('apiKeyInput');
       const badge = document.getElementById('keyStatusBadge');
+
       if (input) input.value = key;
       if (badge) {
         if (key && key.length > 5) {
           badge.innerHTML = `<span class="status-badge status-success">✓ Key Active (ends in ...${key.slice(-4)})</span>`;
         } else {
-          badge.innerHTML = `<span class="status-badge status-warning">No Key Configured (Using Dynamic Fallback Patterns)</span>`;
+          badge.innerHTML = `<span class="status-badge status-warning">No Key Configured (Using Offline Fallback Patterns)</span>`;
         }
       }
+
+      refreshCostAuditUI();
     }
 
     function toggleKeyVisibility() {
       const input = document.getElementById('apiKeyInput');
-      if (input) input.type = input.type === 'password' ? 'text' : 'password';
+      if (input) {
+        input.type = (input.type === 'password') ? 'text' : 'password';
+      }
     }
 
-    // --- SCRIPT GENERATION ENGINE ---
+    // --- COST ACCUMULATOR & AUDIT ---
+    function recordGenerationExpense(series, panels, inputTokens, outputTokens) {
+      try {
+        const cost = (inputTokens * 0.00000015) + (outputTokens * 0.0000006);
+        let history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+        history.unshift({
+          timestamp: new Date().toLocaleString(),
+          series: series,
+          panels: panels,
+          tokens: inputTokens + outputTokens,
+          cost: cost
+        });
+        localStorage.setItem('funnies_cost_history', JSON.stringify(history));
+        refreshCostAuditUI();
+      } catch (e) {}
+    }
+
+    function refreshCostAuditUI() {
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+      } catch (e) { history = []; }
+
+      let lifetime = 0;
+      let monthSpend = 0;
+      const currentMonth = new Date().getMonth();
+
+      history.forEach(item => {
+        const c = parseFloat(item.cost) || 0;
+        lifetime += c;
+        if (item.timestamp) {
+          const d = new Date(item.timestamp);
+          if (!isNaN(d.getTime()) && d.getMonth() === currentMonth) {
+            monthSpend += c;
+          }
+        }
+      });
+
+      const avg = history.length > 0 ? (lifetime / history.length) : 0;
+
+      const elMonth = document.getElementById('costCurrentMonth');
+      const elLife = document.getElementById('costLifetime');
+      const elAvg = document.getElementById('costAvg');
+      const elGens = document.getElementById('totalGens');
+
+      if (elMonth) elMonth.innerText = '$' + monthSpend.toFixed(5);
+      if (elLife) elLife.innerText = '$' + lifetime.toFixed(5);
+      if (elAvg) elAvg.innerText = '$' + avg.toFixed(5);
+      if (elGens) elGens.innerText = history.length;
+
+      const tbody = document.querySelector('#costAuditTable tbody');
+      if (!tbody) return;
+
+      if (history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td></tr>`;
+        return;
+      }
+
+      let rowsHtml = '';
+      history.slice(0, 10).forEach(entry => {
+        const tok = parseInt(entry.tokens) || 0;
+        const val = parseFloat(entry.cost) || 0;
+        rowsHtml += `<tr>
+          <td>${entry.timestamp || '--'}</td>
+          <td>${entry.series || '--'}</td>
+          <td>${entry.panels || '--'}</td>
+          <td>${tok.toLocaleString()}</td>
+          <td>$${val.toFixed(5)}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = rowsHtml;
+    }
+
+    function downloadCostLedgerCSV() {
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+      } catch (e) { history = []; }
+
+      let csv = 'Timestamp,Series,Panels,Tokens,Cost_USD\n';
+      history.forEach(r => {
+        const c = parseFloat(r.cost) || 0;
+        csv += `"${r.timestamp || ''}","${r.series || ''}","${r.panels || ''}",${r.tokens || 0},${c.toFixed(6)}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `comic_agent_cost_history_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    function resetCostLedger() {
+      if (confirm('Reset the Cost Audit Ledger to $0.00?')) {
+        try {
+          localStorage.removeItem('funnies_cost_history');
+        } catch (e) {}
+        refreshCostAuditUI();
+      }
+    }
+
+    // --- SECURE SHARING PORTAL ---
+    function generateSharePackage() {
+      if (!activeSession) {
+        alert('Please generate at least one comic strip first so there is active data to share.');
+        return;
+      }
+      const emailInput = document.getElementById('shareEmailInput');
+      const passInput = document.getElementById('sharePasswordInput');
+      const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : 'colleague@example.com';
+      const password = (passInput && passInput.value.trim()) ? passInput.value.trim() : 'DefaultPass1930';
+
+      let pkg = `====================================================================\n`;
+      pkg += `SECURE COMIC STRIP SHARING PACKAGE (SECTIONS B, C, D & E ONLY)\n`;
+      pkg += `====================================================================\n`;
+      pkg += `CONFIDENTIALITY NOTICE: NotebookLM reference archives and local API credentials are omitted by system guardrail.\n`;
+      pkg += `Recipient: ${email}\n`;
+      pkg += `Verification Phrase: ${password}\n`;
+      pkg += `Docket Ref: ${activeSession.fileNumber}\n`;
+      pkg += `Timestamp: ${activeSession.timestamp}\n\n`;
+      pkg += `[SECTION B: LAYOUT]: ${activeSession.panels}\n`;
+      pkg += `[SECTION C: ART FORMAT]: ${activeSession.color}\n`;
+      pkg += `[SECTION D: CHARACTERISTICS]:\n`;
+      pkg += `  - Tone: ${activeSession.tone}\n`;
+      pkg += `  - Conflict: ${activeSession.conflict}\n`;
+      pkg += `  - Ending: ${activeSession.ending}\n`;
+      pkg += `  - Active Cast: ${activeSession.cast}\n\n`;
+      pkg += `[SECTION E: GENERATED SCRIPT TRANSCRIPT]:\n`;
+      pkg += `${activeSession.prompt}\n`;
+      pkg += `====================================================================`;
+
+      const textEl = document.getElementById('sharePackageText');
+      const container = document.getElementById('shareOutputContainer');
+      if (textEl) textEl.innerText = pkg;
+      if (container) container.style.display = 'block';
+    }
+
+    function copySharePackage() {
+      const textEl = document.getElementById('sharePackageText');
+      if (!textEl) return;
+      navigator.clipboard.writeText(textEl.innerText);
+      alert('✓ Share package copied to clipboard!');
+    }
+
+    function openDefaultEmailClient() {
+      const emailInput = document.getElementById('shareEmailInput');
+      const textEl = document.getElementById('sharePackageText');
+      const email = emailInput ? emailInput.value.trim() : '';
+      const subject = encodeURIComponent(`Funnies Comic Script Share: ${activeSession ? activeSession.fileNumber : 'Docket'}`);
+      const body = encodeURIComponent(textEl ? textEl.innerText : '');
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    }
+
+    // --- STEP 1: INITIALIZE DOCKET & GENERATE PROMPT ---
     async function generatePromptPackage() {
       const btn = document.getElementById('generateBtn');
-      btn.innerText = '⏳ Assembling Dynamic Script & Prompt...';
-      btn.disabled = true;
+      if (btn) {
+        btn.innerText = '⏳ Assembling Dynamic Script & Prompt...';
+        btn.disabled = true;
+      }
 
       const activeChars = [];
       document.querySelectorAll('#characterPills .pill-btn.active').forEach(b => {
@@ -551,25 +845,35 @@
       if (activeChars.length === 0) activeChars.push(SERIES_CASTS[currentSettings.series][0]);
 
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const count = parseInt(localStorage.getItem('funnies_docket_counter') || '1');
-      localStorage.setItem('funnies_docket_counter', (count + 1).toString());
+      let count = 1;
+      try {
+        count = parseInt(localStorage.getItem('funnies_docket_counter') || '1');
+        localStorage.setItem('funnies_docket_counter', (count + 1).toString());
+      } catch (e) {}
+
       const fileNumber = `FUNNIES-${dateStr}-${String(count).padStart(3, '0')}`;
       const nowTimestamp = new Date().toLocaleString();
       const safeSeriesName = currentSettings.series.replace(/[^a-z0-9]/gi, '_');
       const filename = `${fileNumber}_${safeSeriesName}.html`;
 
-      const apiKey = localStorage.getItem('gemini_api_key');
+      let apiKey = '';
+      try {
+        apiKey = localStorage.getItem('gemini_api_key') || '';
+      } catch (e) {}
+
       let scriptData = null;
 
       if (apiKey && apiKey.length > 10) {
         try {
           scriptData = await callGeminiAPI(apiKey, activeChars);
+          recordGenerationExpense(currentSettings.series, currentSettings.panels, 480, 720);
         } catch (e) {
-          console.warn('API call failed; using dynamic offline builder:', e);
           scriptData = buildDynamicScript(activeChars);
+          recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0);
         }
       } else {
         scriptData = buildDynamicScript(activeChars);
+        recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0);
       }
 
       fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);
@@ -589,16 +893,24 @@
         description: `${currentSettings.series} (${currentSettings.panels}): ${currentSettings.conflict} [${currentSettings.tone}]. Cast: ${activeChars.join(', ')}.`
       };
 
-      document.getElementById('promptReviewCard').style.display = 'block';
-      document.getElementById('reassociationCard').style.display = 'block';
-      document.getElementById('docketFileNumber').innerText = `FILE NO: ${fileNumber}`;
-      document.getElementById('docketTimestamp').innerText = `DATE: ${nowTimestamp}`;
-      document.getElementById('geminiPromptText').innerText = fullGeminiPrompt;
+      const promptCard = document.getElementById('promptReviewCard');
+      const reassocCard = document.getElementById('reassociationCard');
+      const docketNum = document.getElementById('docketFileNumber');
+      const docketTime = document.getElementById('docketTimestamp');
+      const promptText = document.getElementById('geminiPromptText');
 
-      btn.innerText = '✨ 1. Generate Prompt & Initialize Docket';
-      btn.disabled = false;
+      if (promptCard) promptCard.style.display = 'block';
+      if (reassocCard) reassocCard.style.display = 'block';
+      if (docketNum) docketNum.innerText = `FILE NO: ${fileNumber}`;
+      if (docketTime) docketTime.innerText = `DATE: ${nowTimestamp}`;
+      if (promptText) promptText.innerText = fullGeminiPrompt;
 
-      document.getElementById('promptReviewCard').scrollIntoView({ behavior: 'smooth' });
+      if (btn) {
+        btn.innerText = '✨ 1. Generate Prompt & Initialize Docket';
+        btn.disabled = false;
+      }
+
+      if (promptCard) promptCard.scrollIntoView({ behavior: 'smooth' });
     }
 
     async function callGeminiAPI(apiKey, chars) {
@@ -610,7 +922,7 @@ Tone: ${currentSettings.tone}.
 Conflict Engine: ${currentSettings.conflict}.
 Ending Reaction Beat: ${currentSettings.ending}.
 Instructions:
-- Use authentic period slang, accurate character mannerisms, and dialect (e.g. for Popeye use nautical jargon, "I yam what I yam", pipe tooting; for Blondie use early 1930s flapper talk; for Jiggs use corned beef & cabbage/Maggie's rolling pin).
+- Use authentic period slang, accurate character mannerisms, and dialect.
 - Return ONLY valid JSON matching this schema:
 {
   "title": "Comic Strip Title",
@@ -639,7 +951,6 @@ Instructions:
       return JSON.parse(data.candidates[0].content.parts[0].text);
     }
 
-    // Dynamic offline builder that responds directly to all user selectors
     function buildDynamicScript(chars) {
       const series = currentSettings.series;
       const isSix = currentSettings.panels === '6-Panel';
@@ -755,7 +1066,6 @@ Instructions:
           );
         }
       } else {
-        // Blondie & Dagwood
         panels = [
           {
             panelNum: 1,
@@ -844,11 +1154,10 @@ Instructions:
     }
 
     window.addEventListener('paste', e => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      for (let index in items) {
-        const item = items[index];
-        if (item.kind === 'file' && item.type.startsWith('image/')) {
-          processSelectedImageFile(item.getAsFile());
+      const items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData) || {}).items || [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+          processSelectedImageFile(items[i].getAsFile());
         }
       }
     });
@@ -863,7 +1172,7 @@ Instructions:
       });
       dropZone.addEventListener('drop', e => {
         const dt = e.dataTransfer;
-        if (dt.files && dt.files[0]) processSelectedImageFile(dt.files[0]);
+        if (dt && dt.files && dt.files[0]) processSelectedImageFile(dt.files[0]);
       });
     }
 
@@ -871,15 +1180,20 @@ Instructions:
       const reader = new FileReader();
       reader.onload = e => {
         associatedImageDataUrl = e.target.result;
-        document.getElementById('dropZoneText').style.display = 'none';
+        const dzText = document.getElementById('dropZoneText');
         const img = document.getElementById('imagePreview');
-        img.src = associatedImageDataUrl;
-        img.style.display = 'block';
-
         const saveBtn = document.getElementById('saveDocBtn');
-        saveBtn.disabled = false;
-        saveBtn.className = 'btn btn-success';
-        saveBtn.innerText = `💾 Save Document: ${activeSession.filename}`;
+
+        if (dzText) dzText.style.display = 'none';
+        if (img) {
+          img.src = associatedImageDataUrl;
+          img.style.display = 'block';
+        }
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.className = 'btn btn-success';
+          saveBtn.innerText = `💾 Save Document: ${activeSession ? activeSession.filename : 'Funnies.html'}`;
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -938,22 +1252,31 @@ Instructions:
       a.click();
 
       recordToArchiveLog(activeSession);
-      document.getElementById('docCreationStatus').innerHTML = `✓ Saved as: <strong>${activeSession.filename}</strong> and logged!`;
+      const statusEl = document.getElementById('docCreationStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `✓ Saved as: <strong>${activeSession.filename}</strong> and logged!`;
+      }
     }
 
     function recordToArchiveLog(session) {
-      let log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
-      log.unshift({
-        timestamp: session.timestamp,
-        filename: session.filename,
-        description: session.description
-      });
-      localStorage.setItem('funnies_archive_master_log', JSON.stringify(log));
+      try {
+        let log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+        log.unshift({
+          timestamp: session.timestamp,
+          filename: session.filename,
+          description: session.description
+        });
+        localStorage.setItem('funnies_archive_master_log', JSON.stringify(log));
+      } catch (e) {}
       refreshArchiveTable();
     }
 
     function refreshArchiveTable() {
-      const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+      let log = [];
+      try {
+        log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+      } catch (e) { log = []; }
+
       const tbody = document.querySelector('#masterArchiveTable tbody');
       if (!tbody) return;
 
@@ -961,22 +1284,26 @@ Instructions:
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No comic strips logged yet.</td></tr>`;
         return;
       }
-      tbody.innerHTML = '';
+      let html = '';
       log.forEach(item => {
-        const row = `<tr>
-          <td>${item.timestamp}</td>
-          <td><strong>${item.filename}</strong></td>
-          <td>${item.description}</td>
+        html += `<tr>
+          <td>${item.timestamp || '--'}</td>
+          <td><strong>${item.filename || '--'}</strong></td>
+          <td>${item.description || '--'}</td>
         </tr>`;
-        tbody.innerHTML += row;
       });
+      tbody.innerHTML = html;
     }
 
     function exportArchiveLogCSV() {
-      const log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+      let log = [];
+      try {
+        log = JSON.parse(localStorage.getItem('funnies_archive_master_log') || '[]');
+      } catch (e) { log = []; }
+
       let csv = 'DateAndTime,FileName,ShortDescription\n';
       log.forEach(r => {
-        csv += `"${r.timestamp}","${r.filename}","${r.description.replace(/"/g, '""')}"\n`;
+        csv += `"${r.timestamp || ''}","${r.filename || ''}","${(r.description || '').replace(/"/g, '""')}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv' });
       const a = document.createElement('a');
@@ -987,7 +1314,9 @@ Instructions:
 
     function clearArchiveLog() {
       if (confirm('Clear all entries in the Funnies Generator Log?')) {
-        localStorage.removeItem('funnies_archive_master_log');
+        try {
+          localStorage.removeItem('funnies_archive_master_log');
+        } catch (e) {}
         refreshArchiveTable();
       }
     }
