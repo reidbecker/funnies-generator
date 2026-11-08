@@ -263,9 +263,9 @@
   </header>
 
   <nav>
-    <button class="nav-tab active" onclick="switchTab('generator')">🎨 Funnies Generator</button>
-    <button class="nav-tab" onclick="switchTab('log')">📂 Funnies Generator Log</button>
-    <button class="nav-tab" onclick="switchTab('admin')">⚙️ Administrator & Settings</button>
+    <button class="nav-tab active" onclick="switchTab('generator', this)">🎨 Funnies Generator</button>
+    <button class="nav-tab" onclick="switchTab('log', this)">📂 Funnies Generator Log</button>
+    <button class="nav-tab" onclick="switchTab('admin', this)">⚙️ Administrator & Settings</button>
   </nav>
 
   <main>
@@ -505,7 +505,7 @@
       <div class="card">
         <h2 class="card-title">Secure Strip Sharing Portal</h2>
         <div class="banner-info" style="border-left-color: #10b981; background-color: #f0fdf4;">
-          <strong>NotebookLM Non-Shareable Guardrail Active:</strong> When generating share packages, all proprietary reference archives and local API credentials are automatically omitted. Only Sections B, C, D, and E (panel layouts, characteristics, and generated scripts) are bundled.
+          <strong>NotebookLM Non-Shareable Guardrail Active:</strong> When generating share packages, proprietary reference archives and local API credentials are automatically omitted. Only Sections B, C, D, and E (panel layouts, characteristics, and generated scripts) are bundled.
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
           <div class="form-group">
@@ -553,14 +553,20 @@
       document.body.classList.add('large-text');
     }
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-' + tabId).classList.add('active');
-      event.target.classList.add('active');
+    function switchTab(tabId, clickedBtn) {
+      try {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+        
+        const targetPanel = document.getElementById('tab-' + tabId);
+        if (targetPanel) targetPanel.classList.add('active');
+        if (clickedBtn) clickedBtn.classList.add('active');
 
-      if (tabId === 'log') refreshArchiveTable();
-      if (tabId === 'admin') syncAdminUI();
+        if (tabId === 'log') refreshArchiveTable();
+        if (tabId === 'admin') syncAdminUI();
+      } catch (err) {
+        console.error("Navigation error:", err);
+      }
     }
 
     function selectSinglePill(groupId, btn, value) {
@@ -585,102 +591,139 @@
 
     // --- API KEY STORAGE & SYNC ---
     function saveApiKey() {
-      const input = document.getElementById('apiKeyInput');
-      const key = input.value.trim();
-      if (!key) {
-        alert('Please enter a valid API key.');
-        return;
+      try {
+        const input = document.getElementById('apiKeyInput');
+        const key = input.value.trim();
+        if (!key) {
+          alert('Please enter a valid API key.');
+          return;
+        }
+        localStorage.setItem('gemini_api_key', key);
+        syncAdminUI();
+        alert('✓ API Key successfully saved in private browser storage! It will remain saved for future sessions.');
+      } catch (e) {
+        console.error("Failed to save key:", e);
       }
-      localStorage.setItem('gemini_api_key', key);
-      syncAdminUI();
-      alert('✓ API Key successfully saved in private browser storage! It will remain saved for future sessions.');
     }
 
     function removeApiKey() {
       if (confirm('Are you sure you want to remove the saved API key from this browser?')) {
         localStorage.removeItem('gemini_api_key');
-        document.getElementById('apiKeyInput').value = '';
+        const input = document.getElementById('apiKeyInput');
+        if (input) input.value = '';
         syncAdminUI();
       }
     }
 
     function syncAdminUI() {
-      const key = localStorage.getItem('gemini_api_key') || '';
-      const input = document.getElementById('apiKeyInput');
-      const badge = document.getElementById('keyStatusBadge');
+      try {
+        const key = localStorage.getItem('gemini_api_key') || '';
+        const input = document.getElementById('apiKeyInput');
+        const badge = document.getElementById('keyStatusBadge');
 
-      if (key && key.length > 5) {
-        input.value = key;
-        badge.innerHTML = `<span class="status-badge status-success">✓ Key Active & Saved in Browser Vault (ends in ...${key.slice(-4)})</span>`;
-      } else {
-        input.value = '';
-        badge.innerHTML = `<span class="status-badge status-warning">No Key Configured (Using Offline Fallback Patterns)</span>`;
+        if (input) input.value = key;
+        if (badge) {
+          if (key && key.length > 5) {
+            badge.innerHTML = `<span class="status-badge status-success">✓ Key Active & Saved in Browser Vault (ends in ...${key.slice(-4)})</span>`;
+          } else {
+            badge.innerHTML = `<span class="status-badge status-warning">No Key Configured (Using Offline Fallback Patterns)</span>`;
+          }
+        }
+        refreshCostAuditUI();
+      } catch (err) {
+        console.error("syncAdminUI error:", err);
       }
-      refreshCostAuditUI();
     }
 
     function toggleKeyVisibility() {
       const input = document.getElementById('apiKeyInput');
-      input.type = input.type === 'password' ? 'text' : 'password';
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
     }
 
     // --- COST ACCUMULATOR & AUDIT ---
     function recordGenerationExpense(series, panels, inputTokens, outputTokens) {
-      const cost = (inputTokens * 0.00000015) + (outputTokens * 0.0000006);
-      let history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
-      history.unshift({
-        timestamp: new Date().toLocaleString(),
-        series: series,
-        panels: panels,
-        tokens: inputTokens + outputTokens,
-        cost: cost
-      });
-      localStorage.setItem('funnies_cost_history', JSON.stringify(history));
-      refreshCostAuditUI();
+      try {
+        const cost = (inputTokens * 0.00000015) + (outputTokens * 0.0000006);
+        let history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+        history.unshift({
+          timestamp: new Date().toLocaleString(),
+          series: series,
+          panels: panels,
+          tokens: inputTokens + outputTokens,
+          cost: cost
+        });
+        localStorage.setItem('funnies_cost_history', JSON.stringify(history));
+        refreshCostAuditUI();
+      } catch (e) {
+        console.error("Expense logging error:", e);
+      }
     }
 
     function refreshCostAuditUI() {
-      const history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
-      let lifetime = 0;
-      let monthSpend = 0;
-      const currentMonth = new Date().getMonth();
+      try {
+        const history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
+        let lifetime = 0;
+        let monthSpend = 0;
+        const currentMonth = new Date().getMonth();
 
-      history.forEach(item => {
-        lifetime += item.cost;
-        if (new Date(item.timestamp).getMonth() === currentMonth) {
-          monthSpend += item.cost;
+        history.forEach(item => {
+          const itemCost = Number(item.cost) || 0;
+          lifetime += itemCost;
+          if (item.timestamp && new Date(item.timestamp).getMonth() === currentMonth) {
+            monthSpend += itemCost;
+          }
+        });
+
+        const avg = history.length > 0 ? (lifetime / history.length) : 0;
+
+        const elMonth = document.getElementById('costCurrentMonth');
+        const elLife = document.getElementById('costLifetime');
+        const elAvg = document.getElementById('costAvg');
+        const elGens = document.getElementById('totalGens');
+
+        if (elMonth) elMonth.innerText = '$' + monthSpend.toFixed(5);
+        if (elLife) elLife.innerText = '$' + lifetime.toFixed(5);
+        if (elAvg) elAvg.innerText = '$' + avg.toFixed(5);
+        if (elGens) elGens.innerText = history.length;
+
+        const tbody = document.querySelector('#costAuditTable tbody');
+        if (!tbody) return;
+
+        if (history.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td></tr>`;
+          return;
         }
-      });
 
-      const avg = history.length > 0 ? (lifetime / history.length) : 0;
-
-      document.getElementById('costCurrentMonth').innerText = '$' + monthSpend.toFixed(5);
-      document.getElementById('costLifetime').innerText = '$' + lifetime.toFixed(5);
-      document.getElementById('costAvg').innerText = '$' + avg.toFixed(5);
-      document.getElementById('totalGens').innerText = history.length;
-
-      const tbody = document.querySelector('#costAuditTable tbody');
-      if (history.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No generation expenses logged yet this month.</td></tr>`;
-        return;
+        tbody.innerHTML = '';
+        history.slice(0, 10).forEach(entry => {
+          const tokens = Number(entry.tokens) || 0;
+          const costVal = Number(entry.cost) || 0;
+          const row = `<tr>
+            <td>${entry.timestamp || '--'}</td>
+            <td>${entry.series || '--'}</td>
+            <td>${entry.panels || '--'}</td>
+            <td>${tokens.toLocaleString()}</td>
+            <td>$${costVal.toFixed(5)}</td>
+          </tr>`;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error("refreshCostAuditUI error:", err);
       }
-      tbody.innerHTML = '';
-      history.slice(0, 10).forEach(entry => {
-        const row = `<tr>
-          <td>${entry.timestamp}</td>
-          <td>${entry.series}</td>
-          <td>${entry.panels}</td>
-          <td>${entry.tokens.toLocaleString()}</td> <td>$${entry.cost.toFixed(5)}</td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
     }
 
     function downloadCostLedgerCSV() {
       const history = JSON.parse(localStorage.getItem('funnies_cost_history') || '[]');
       let csv = 'Timestamp,Series,Panels,Tokens,Cost_USD\n';
       history.forEach(r => {
-        csv += `"${r.timestamp}","${r.series}","${r.panels}",${r.tokens},${r.cost.toFixed(6)}\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `comic_agent_cost_history_${new Date().toISOString().slice(0,10)}.csv`;
+        csv += `"${r.timestamp}","${r.series}","${r.panels}",${r.tokens},${Number(r.cost).toFixed(6)}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `comic_agent_cost_history_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
     }
 
@@ -707,10 +750,16 @@
       pkg += `Recipient: ${email}\n`;
       pkg += `Verification Phrase: ${password}\n`;
       pkg += `Docket Ref: ${activeSession.fileNumber}\n`;
-      pkg += `Timestamp: ${activeSession.timestamp}\n\n`; pkg += `[SECTION B: LAYOUT]: ${activeSession.panels}\n`;
-      pkg += `[SECTION C: ART FORMAT]: ${activeSession.color}\n`; pkg += `[SECTION D: CHARACTERISTICS]:\n`; pkg += `  - Tone: ${activeSession.tone}\n`;
-      pkg += `  - Conflict: ${activeSession.conflict}\n`; pkg += `  - Ending: ${activeSession.ending}\n`;
-      pkg += `  - Active Cast: ${activeSession.cast}\n\n`; pkg += `[SECTION E: GENERATED SCRIPT TRANSCRIPT]:\n`; pkg += `${activeSession.prompt}\n`;
+      pkg += `Timestamp: ${activeSession.timestamp}\n\n`;
+      pkg += `[SECTION B: LAYOUT]: ${activeSession.panels}\n`;
+      pkg += `[SECTION C: ART FORMAT]: ${activeSession.color}\n`;
+      pkg += `[SECTION D: CHARACTERISTICS]:\n`;
+      pkg += `  - Tone: ${activeSession.tone}\n`;
+      pkg += `  - Conflict: ${activeSession.conflict}\n`;
+      pkg += `  - Ending: ${activeSession.ending}\n`;
+      pkg += `  - Active Cast: ${activeSession.cast}\n\n`;
+      pkg += `[SECTION E: GENERATED SCRIPT TRANSCRIPT]:\n`;
+      pkg += `${activeSession.prompt}\n`;
       pkg += `====================================================================`;
 
       document.getElementById('sharePackageText').innerText = pkg;
@@ -727,12 +776,66 @@
       const email = document.getElementById('shareEmailInput').value.trim();
       const subject = encodeURIComponent(`Funnies Comic Script Share: ${activeSession.fileNumber}`);
       const body = encodeURIComponent(document.getElementById('sharePackageText').innerText);
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`; }  // --- STEP 1: INITIALIZE DOCKET & GENERATE PROMPT --- async function generatePromptPackage() { const btn = document.getElementById('generateBtn'); btn.innerText = '⏳ Initializing Docket & Prompt...'; btn.disabled = true;  const activeChars = []; document.querySelectorAll('#characterPills .pill-btn.active').forEach(b => { activeChars.push(b.innerText.replace('✓ ', '').trim()); });  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, ''); const count = parseInt(localStorage.getItem('funnies_docket_counter') \vert{}\vert{} '1'); localStorage.setItem('funnies_docket_counter', (count + 1).toString()); const fileNumber = `FUNNIES-${dateStr}-${String(count).padStart(3, '0')}`; const nowTimestamp = new Date().toLocaleString(); const safeSeriesName = currentSettings.series.replace(/[^a-z0-9]/gi, '_'); const filename = `${fileNumber}_${safeSeriesName}.html`;  const apiKey = localStorage.getItem('gemini_api_key'); let scriptData = null;  if (apiKey && apiKey.length > 10) { try { scriptData = await callGeminiAPI(apiKey, activeChars); recordGenerationExpense(currentSettings.series, currentSettings.panels, 480, 720); } catch (e) { console.warn('API script error, falling back to grounded template', e); scriptData = buildGroundedTemplate(activeChars); recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0); } } else { scriptData = buildGroundedTemplate(activeChars); recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0); }  fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);  activeSession = { fileNumber: fileNumber, filename: filename, timestamp: nowTimestamp, series: currentSettings.series, panels: currentSettings.panels, color: currentSettings.color === 'B&W' ? 'Classic B&W Line Art' : 'Vintage Sunday Newsprint Color', cast: activeChars.join(', '), tone: currentSettings.tone, conflict: currentSettings.conflict, ending: currentSettings.ending, prompt: fullGeminiPrompt, description: `${currentSettings.series} (${currentSettings.panels}):${currentSettings.conflict} [${currentSettings.tone}]. Cast: ${activeChars.join(', ')}.`
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    }
+
+    // --- STEP 1: INITIALIZE DOCKET & GENERATE PROMPT ---
+    async function generatePromptPackage() {
+      const btn = document.getElementById('generateBtn');
+      btn.innerText = '⏳ Initializing Docket & Prompt...';
+      btn.disabled = true;
+
+      const activeChars = [];
+      document.querySelectorAll('#characterPills .pill-btn.active').forEach(b => {
+        activeChars.push(b.innerText.replace('✓ ', '').trim());
+      });
+
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const count = parseInt(localStorage.getItem('funnies_docket_counter') || '1');
+      localStorage.setItem('funnies_docket_counter', (count + 1).toString());
+      const fileNumber = `FUNNIES-${dateStr}-${String(count).padStart(3, '0')}`;
+      const nowTimestamp = new Date().toLocaleString();
+      const safeSeriesName = currentSettings.series.replace(/[^a-z0-9]/gi, '_');
+      const filename = `${fileNumber}_${safeSeriesName}.html`;
+
+      const apiKey = localStorage.getItem('gemini_api_key');
+      let scriptData = null;
+
+      if (apiKey && apiKey.length > 10) {
+        try {
+          scriptData = await callGeminiAPI(apiKey, activeChars);
+          recordGenerationExpense(currentSettings.series, currentSettings.panels, 480, 720);
+        } catch (e) {
+          console.warn('API script error, falling back to grounded template', e);
+          scriptData = buildGroundedTemplate(activeChars);
+          recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0);
+        }
+      } else {
+        scriptData = buildGroundedTemplate(activeChars);
+        recordGenerationExpense(currentSettings.series, currentSettings.panels, 0, 0);
+      }
+
+      fullGeminiPrompt = buildFormattedGeminiPrompt(scriptData, activeChars);
+
+      activeSession = {
+        fileNumber: fileNumber,
+        filename: filename,
+        timestamp: nowTimestamp,
+        series: currentSettings.series,
+        panels: currentSettings.panels,
+        color: currentSettings.color === 'B&W' ? 'Classic B&W Line Art' : 'Vintage Sunday Newsprint Color',
+        cast: activeChars.join(', '),
+        tone: currentSettings.tone,
+        conflict: currentSettings.conflict,
+        ending: currentSettings.ending,
+        prompt: fullGeminiPrompt,
+        description: `${currentSettings.series} (${currentSettings.panels}): ${currentSettings.conflict} [${currentSettings.tone}]. Cast: ${activeChars.join(', ')}.`
       };
 
       document.getElementById('promptReviewCard').style.display = 'block';
       document.getElementById('reassociationCard').style.display = 'block';
-      document.getElementById('docketFileNumber').innerText = `FILE NO: ${fileNumber}`; document.getElementById('docketTimestamp').innerText = `DATE: ${nowTimestamp}`;
+      document.getElementById('docketFileNumber').innerText = `FILE NO: ${fileNumber}`;
+      document.getElementById('docketTimestamp').innerText = `DATE: ${nowTimestamp}`;
       document.getElementById('geminiPromptText').innerText = fullGeminiPrompt;
 
       btn.innerText = '✨ 1. Generate Prompt & Initialize Docket';
@@ -784,7 +887,8 @@ Return ONLY valid JSON matching this schema:
         : "Authentic 1930 vintage Sunday funny comic strip, four-color newsprint palette with classic Ben-Day dot shading, vintage watercolor wash, classic line art, Chic Young style.";
 
       let prompt = `Create a complete ${panelCount} horizontal comic strip in the style of Chic Young's classic 1930 newspaper funnies "${currentSettings.series}".\n\n`;
-      prompt += `Art Style: ${artStyle}\n`; prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp black borders and dialogue speech bubbles.\n`;
+      prompt += `Art Style: ${artStyle}\n`;
+      prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp black borders and dialogue speech bubbles.\n`;
       prompt += `Featured Characters: ${chars.join(', ')}\n\n`;
       prompt += `PANEL DESCRIPTIONS:\n`;
 
@@ -826,7 +930,7 @@ Return ONLY valid JSON matching this schema:
         },
         {
           panelNum: 4,
-          visual: `${c2} playfully pats Pop on his bald head; Pop looks astonished and disarmed while${c1} raises eyebrows to the reader.`,
+          visual: `${c2} playfully pats Pop on his bald head; Pop looks astonished and disarmed while ${c1} raises eyebrows to the reader.`,
           dialogue: `${c2}: "Now now, Pops! Play your cards right and you can buy us both a tall ice cream soda!"`,
           sfx: "PAT! PAT!"
         }
@@ -866,64 +970,13 @@ Return ONLY valid JSON matching this schema:
 
     // --- RE-ASSOCIATION: DRAG / DROP / PASTE ---
     function triggerFileInput() {
-      document.getElementById('manualImageFileInput').click();
+      const input = document.getElementById('manualImageFileInput');
+      if (input) input.click();
     }
 
     function handleImageFileSelected(input) {
-      if (input.files && input.files[0]) processSelectedImageFile(input.files[0]);
+      if (input && input.files && input.files[0]) processSelectedImageFile(input.files[0]);
     }
 
     window.addEventListener('paste', e => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      for (let index in items) {
-        const item = items[index];
-        if (item.kind === 'file' && item.type.startsWith('image/')) {
-          processSelectedImageFile(item.getAsFile());
-        }
-      }
-    });
-
-    const dropZone = document.getElementById('imageDropZone');
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, e => { e.preventDefault(); dropZone.style.background = '#eff6ff'; }, false);
-    });
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, e => { e.preventDefault(); dropZone.style.background = '#f8fafc'; }, false);
-    });
-    dropZone.addEventListener('drop', e => {
-      const dt = e.dataTransfer;
-      if (dt.files && dt.files[0]) processSelectedImageFile(dt.files[0]);
-    });
-
-    function processSelectedImageFile(file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        associatedImageDataUrl = e.target.result;
-        document.getElementById('dropZoneText').style.display = 'none';
-        const img = document.getElementById('imagePreview');
-        img.src = associatedImageDataUrl;
-        img.style.display = 'block';
-
-        const saveBtn = document.getElementById('saveDocBtn');
-        saveBtn.disabled = false;
-        saveBtn.className = 'btn btn-success';
-        saveBtn.innerText = `💾 Save Document: ${activeSession.filename}`;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // --- STEP 2: SAVE 2-PAGE DOCUMENT & RECORD TO LOG ---
-    function saveTwoPageDocumentToComputer() {
-      if (!associatedImageDataUrl || !activeSession) return;
-
-      const docHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>${activeSession.fileNumber}</title>
-  <style>
-    @page { size: 8.5in 11in; margin: 0.8in; }
-    body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.4; color: #111; margin: 0; padding: 20px; }
-    .page-container { min-height: 9.5in; box-sizing: border-box; }
-    .page-break { page-break-after: always; break-after: page; }
-    table { width
+      const items = (e.clipboardData || e
