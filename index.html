@@ -269,7 +269,7 @@
     <!-- TAB 1: FUNNIES GENERATOR -->
     <div id="tab-generator" class="tab-content active">
       <div class="banner-info">
-        <strong>Dynamic Selection Engine Active:</strong> Scripts, character casts, narrative conflicts, and prompt scripts update immediately to reflect all chosen attributes.
+        <strong>Dynamic Selection Engine Active:</strong> Scripts, character casts, narrative conflicts, historical period aesthetics, and prompt scripts update immediately to reflect all chosen attributes.
       </div>
 
       <div class="card">
@@ -338,6 +338,25 @@
               <button class="pill-btn" type="button" onclick="selectSinglePill('endingGroup', this, 'Cloud of Dust Exit')">Cloud of Dust Exit</button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- SECTION C: PERIOD -->
+      <div class="card">
+        <h2 class="card-title">SECTION C: Period</h2>
+        <div class="form-group">
+          <label>Select Era / Historical Art Period:</label>
+          <div class="pill-group" id="periodGroup">
+            <button class="pill-btn active" type="button" onclick="selectPeriod('1910-1929', this)">1910-1929</button>
+            <button class="pill-btn" type="button" onclick="selectPeriod('1930-1949', this)">1930-1949</button>
+            <button class="pill-btn" type="button" onclick="selectPeriod('1950-1969', this)">1950-1969</button>
+            <button class="pill-btn" type="button" onclick="selectPeriod('1970-1989', this)">1970-1989</button>
+            <button class="pill-btn" type="button" onclick="selectPeriod('1990-2009', this)">1990-2009</button>
+            <button class="pill-btn" type="button" onclick="selectPeriod('2010-present', this)">2010-present</button>
+          </div>
+        </div>
+        <div style="font-size: calc(0.85rem * var(--font-scale)); color: var(--text-muted); font-style: italic;" id="periodDescPreview">
+          Art Style: Authentic 1910s/1920s early newspaper comic strip line art, heavy hand-drawn dip-pen cross-hatching, raw pulp newsprint texture, and vintage hand-lettered speech balloons.
         </div>
 
         <div style="margin-top: 1.5rem; text-align: center;">
@@ -504,13 +523,23 @@
       'Krazy Kat': ['Krazy Kat', 'Ignatz Mouse', 'Officer Bull Pupp']
     };
 
+    const PERIOD_PROMPTS = {
+      '1910-1929': 'Art Style: Authentic 1910s/1920s early newspaper comic strip line art, heavy hand-drawn dip-pen cross-hatching, raw pulp newsprint texture, and vintage hand-lettered speech balloons.',
+      '1930-1949': 'Art Style: Golden Age classic newspaper comic strip, bold expressive brush inks, authentic four-color newsprint Ben-Day dot shading, and 1930s/1940s vintage funny aesthetics.',
+      '1950-1969': 'Art Style: Mid-century atomic-age newspaper funnies, clean line weights, streamlined cartoon geometry, mechanical halftone screentone patterns, and 1950s/1960s Sunday color palette.',
+      '1970-1989': 'Art Style: Bronze Age newspaper comic strip styling, stylized organic inking, muted vintage newsprint color wash, and expressive 1970s/1980s daily comic layout.',
+      '1990-2009': 'Art Style: Modern syndicated newsprint comic strip, clean uniform line work, early digital pre-press color separation, and vibrant 1990s/2000s daily syndicate styling.',
+      '2010-present': 'Art Style: Contemporary digital comic strip aesthetic, crisp vector-grade line art, modern full-spectrum digital coloring, and clean modern typographic balloons.'
+    };
+
     let currentSettings = {
       series: 'Blondie & Dagwood',
       panels: '4-Panel',
       color: 'B&W',
       tone: 'Domestic / Warm',
       conflict: 'Domestic Routine',
-      ending: 'Fourth-Wall Break'
+      ending: 'Fourth-Wall Break',
+      period: '1910-1929'
     };
 
     let activeSession = null;
@@ -554,6 +583,16 @@
       btn.classList.add('active');
       currentSettings.series = seriesName;
       populateCharacterPills(seriesName);
+    }
+
+    function selectPeriod(periodLabel, btn) {
+      document.getElementById('periodGroup').querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSettings.period = periodLabel;
+      const preview = document.getElementById('periodDescPreview');
+      if (preview) {
+        preview.innerText = PERIOD_PROMPTS[periodLabel] || '';
+      }
     }
 
     function populateCharacterPills(seriesName) {
@@ -761,8 +800,9 @@
       pkg += `Docket Ref: ${activeSession.fileNumber}\n`;
       pkg += `Timestamp: ${activeSession.timestamp}\n\n`;
       pkg += `[SECTION B: LAYOUT]: ${activeSession.panels}\n`;
-      pkg += `[SECTION C: ART FORMAT]: ${activeSession.color}\n`;
+      pkg += `[SECTION C: PERIOD]: ${activeSession.period}\n`;
       pkg += `[SECTION D: CHARACTERISTICS]:\n`;
+      pkg += `  - Series: ${activeSession.series}\n`;
       pkg += `  - Tone: ${activeSession.tone}\n`;
       pkg += `  - Conflict: ${activeSession.conflict}\n`;
       pkg += `  - Ending: ${activeSession.ending}\n`;
@@ -851,6 +891,7 @@
         tone: currentSettings.tone,
         conflict: currentSettings.conflict,
         ending: currentSettings.ending,
+        period: currentSettings.period,
         prompt: fullGeminiPrompt
       };
 
@@ -875,7 +916,9 @@
     }
 
     async function callGeminiAPI(apiKey, chars) {
-      const prompt = `Write an authentic 1920s/1930s newspaper comic strip script for "${currentSettings.series}".
+      const periodPromptText = PERIOD_PROMPTS[currentSettings.period] || PERIOD_PROMPTS['1910-1929'];
+      const prompt = `Write an authentic comic strip script for "${currentSettings.series}".
+Period Era: ${currentSettings.period} (${periodPromptText}).
 Characters: ${chars.join(', ')}.
 Layout: ${currentSettings.panels}.
 Color Mode: ${currentSettings.color}.
@@ -883,7 +926,7 @@ Tone: ${currentSettings.tone}.
 Conflict Engine: ${currentSettings.conflict}.
 Ending Reaction Beat: ${currentSettings.ending}.
 Instructions:
-- Use authentic period slang, accurate character mannerisms, and dialect.
+- Reflect period-accurate vernacular, references, and pacing matching the ${currentSettings.period} era.
 - Return ONLY valid JSON matching this schema:
 {
   "title": "Comic Strip Title",
@@ -1073,15 +1116,18 @@ Instructions:
 
     function buildFormattedGeminiPrompt(data, chars) {
       const panelCount = currentSettings.panels;
-      const artStyle = currentSettings.color === 'B&W'
-        ? "Authentic 1920s/1930s vintage newspaper comic strip line art, hand-drawn ink cross-hatching, high-contrast black and white only, newsprint texture, clean thick borders."
-        : "Authentic 1920s/1930s vintage Sunday funny comic strip, four-color newsprint palette with classic Ben-Day dot shading, vintage watercolor wash.";
+      const periodPromptText = PERIOD_PROMPTS[currentSettings.period] || PERIOD_PROMPTS['1910-1929'];
+      const colorStyle = currentSettings.color === 'B&W'
+        ? "high-contrast black and white line drawing only, clean ink hatchings, no color"
+        : "authentic newspaper color palette with traditional printing dot texture";
 
       let prompt = `Create a complete ${panelCount} horizontal comic strip for the classic newspaper funnies series "${currentSettings.series}".\n\n`;
-      prompt += `Art Style: ${artStyle}\n`;
+      prompt += `${periodPromptText}\n`;
+      prompt += `Color Mode: ${currentSettings.color} (${colorStyle}).\n`;
       prompt += `Layout: Exactly ${panelCount} arranged sequentially side-by-side with crisp borders and clean dialogue speech bubbles.\n`;
       prompt += `Featured Characters: ${chars.join(', ')}\n`;
-      prompt += `Narrative Tone: ${currentSettings.tone} | Conflict: ${currentSettings.conflict} | Ending Beat: ${currentSettings.ending}\n\n`;
+      prompt += `Period Era: ${currentSettings.period}\n`;
+      prompt += `Narrative Tone: ${currentSettings.tone} | Conflict: ${currentSettings.conflict} | Ending Beat:${currentSettings.ending}\n\n`;
       prompt += `PANEL BREAKDOWN:\n`;
 
       data.panels.forEach(p => {
@@ -1175,57 +1221,4 @@ Instructions:
     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
     th, td { border: 1px solid #666; padding: 8px 10px; font-size: 10pt; text-align: left; }
     th { background-color: #f1f5f9; font-weight: bold; width: 22%; }
-    pre { background-color: #f8fafc; border: 1px solid #ccc; padding: 12px; font-size: 9.5pt; white-space: pre-wrap; font-family: Consolas, monospace; }
-    .img-box { text-align: center; margin-top: 25px; }
-    .img-box img { max-width: 100%; height: auto; border: 2px solid #000; }
-  </style>
-</head>
-<body>
-  <div class="page-container">
-    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">COMIC STRIP PRODUCTION DOCKET</h2>
-    <table>
-      <tr><th>File Number:</th><td><strong>${activeSession.fileNumber}</strong></td><th>Date & Time:</th><td>${activeSession.timestamp}</td></tr>
-      <tr><th>Series:</th><td>${activeSession.series}</td><th>Layout:</th><td>${activeSession.panels}</td></tr>
-      <tr><th>Color Mode:</th><td>${activeSession.color}</td><th>Cast:</th><td>${activeSession.cast}</td></tr>
-      <tr><th>Tone:</th><td>${activeSession.tone}</td><th>Conflict:</th><td>${activeSession.conflict}</td></tr>
-      <tr><th>Ending Beat:</th><td colspan="3">${activeSession.ending}</td></tr>
-    </table>
-    <h3>Image Prompt Script:</h3>
-    <pre>${escapeHtml(activeSession.prompt)}</pre>
-  </div>
-
-  <div class="page-break"></div>
-
-  <div class="page-container">
-    <h2 style="border-bottom: 2px solid #000; padding-bottom: 4px; margin-top: 0;">FINISHED COMIC ARTWORK</h2>
-    <p><strong>Docket Reference:</strong> ${activeSession.fileNumber} &nbsp;|&nbsp; <strong>Filename:</strong> ${activeSession.filename}</p>
-    <div class="img-box">
-      <img src="${associatedImageDataUrl}" alt="Comic Strip Image" />
-    </div>
-  </div>
-</body>
-</html>`;
-
-      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = activeSession.filename;
-      a.click();
-
-      const statusEl = document.getElementById('docCreationStatus');
-      if (statusEl) {
-        statusEl.innerHTML = `✓ Saved as: <strong>${activeSession.filename}</strong>!`;
-      }
-    }
-
-    function escapeHtml(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      populateCharacterPills(currentSettings.series);
-      syncAdminUI();
-    });
-  </script>
-</body>
-</html>
+    pre { background-color: #f8fafc; border: 1px solid #ccc; padding: 12px; font-size: 9.5pt; white-space: pre-wrap; font-
